@@ -28,25 +28,6 @@
     font-size: 14px;
 }
 
-.auth-form select:focus {
-    outline: none;
-    border-color: #0095FF;
-    box-shadow: 0 0 0 2px rgba(0,149,255,0.2);
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.auth-button {
-    width: 100%;
-    padding: 15px;
-    background: #0095FF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-bottom: 15px;
-}
-
 .switch-form {
     text-align: center;
     color: #666;
@@ -97,6 +78,25 @@
     border-color: #0095FF;
     box-shadow: 0 0 0 2px rgba(0,149,255,0.2);
 }
+
+/* Inline form-level error / info messages for auth pages */
+.form-message {
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin: 0 0 16px 0;
+    font-size: 14px;
+}
+.form-message.error {
+    background: #fff1f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+.form-message.info {
+    background: #ecfeff;
+    color: #055160;
+    border: 1px solid #99f6e4;
+}
+.form-message.hidden { display: none; }
 
 
 /* ===== AUTH PAGE RESPONSIVE ===== */

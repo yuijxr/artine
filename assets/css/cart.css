@@ -1,84 +1,4 @@
 /* ===== CART PAGE STYLES ===== */
-.cart-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 40px;
-    margin-bottom: 60px;
-}
-
-/* ===== CART ITEMS ===== */
-.cart-items {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.cart-item {
-    display: grid;
-    grid-template-columns: 120px 1fr auto auto auto;
-    gap: 20px;
-    align-items: center;
-    padding: 20px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    background: #fff;
-    transition: box-shadow 0.3s ease;
-}
-
-.cart-item:hover {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-.cart-item-image {
-    width: 120px;
-    height: 120px;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #C3E6FF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.cart-item-image img {
-    max-width: 80%;
-    max-height: 80%;
-    object-fit: contain;
-}
-
-.cart-item-details {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.cart-item-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0;
-}
-
-.cart-item-category {
-    font-size: 14px;
-    color: #64748b;
-    text-transform: capitalize;
-    margin: 0;
-}
-
-.cart-item-size {
-    font-size: 14px;
-    color: #64748b;
-    margin: 0;
-}
-
-.cart-item-price {
-    font-size: 16px;
-    font-weight: 500;
-    color: #0095FF;
-    margin: 0;
-}
-
 /* ===== QUANTITY CONTROLS ===== */
 .cart-item-quantity {
     display: flex;
@@ -168,38 +88,6 @@
 }
 
 /* ===== CART SUMMARY ===== */
-.cart-summary {
-    background: #f8fafc;
-    border-radius: 12px;
-    padding: 30px;
-    height: fit-content;
-    position: sticky;
-    top: 100px;
-}
-
-.cart-summary-content h3 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #0f172a;
-    margin-bottom: 20px;
-}
-
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    font-size: 16px;
-}
-
-.summary-row.total {
-    font-size: 18px;
-    font-weight: 600;
-    color: #0f172a;
-    border-top: 1px solid #e2e8f0;
-    padding-top: 15px;
-    margin-top: 20px;
-}
-
 .checkout-btn {
     width: 100%;
     padding: 15px;
@@ -228,7 +116,7 @@
     margin-top: 15px;
     border: 1px solid #0095FF;
     border-radius: 5px;
-    transition: all 0.2s ease;
+    transition: all 0.3s;
 }
 
 .continue-shopping-btn:hover {

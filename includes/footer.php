@@ -31,7 +31,7 @@
         
         <div class="footer-right">
             <div class="footer-logo">
-                <a href="index.php"><img src="assets/default-avatar.svg" alt="FitCheck Logo"></a>
+                <a href="index.php"><img src="assets/img/logo.png" alt="FitCheck Logo"></a>
             </div>
         </div>
     </div>

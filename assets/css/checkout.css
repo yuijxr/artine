@@ -1,10 +1,3 @@
-.checkout-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 40px;
-    align-items: start;
-}
-
 /* Addresses + Payment row inside left column */
 .addr-pay-row {
     display: grid;
@@ -54,7 +47,7 @@
 }
 
 .address-ship {
-    font-size: 13px;
+    font-size: 12px;
     color: #0095FF;
     margin-top: 10px;
 }
@@ -64,109 +57,10 @@
 }
 
 .checkout-section-title {
-    margin: 10px 0 12px 0;
+    margin: 10px 0;
     font-size: 18px;
     font-weight: 600;
     color: #0f172a;
-}
-
-.checkout-items {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 10px;
-}
-
-.checkout-item {
-    display: grid;
-    grid-template-columns: 120px 1fr auto;
-    gap: 20px;
-    align-items: center;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    background: #fff;
-    transition: box-shadow 0.3s ease;
-}
-
-.checkout-item:hover {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-
-.checkout-item-image {
-    width: 120px;
-    height: 120px;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #C3E6FF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.checkout-item-image img {
-    max-width: 80%;
-    max-height: 80%;
-    object-fit: contain;
-}
-
-.checkout-item-details {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.checkout-item-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: #0f172a;
-}
-
-.checkout-item-size,
-.checkout-item-qty {
-    font-size: 14px;
-    color: #64748b;
-}
-
-.checkout-item-price {
-    font-size: 16px;
-    font-weight: 600;
-    color: #0f172a;
-    text-align: right;
-}
-
-.checkout-summary {
-    background: #f8fafc;
-    border-radius: 10px;
-    padding: 30px;
-    height: fit-content;
-    position: sticky;
-    top: 100px;
-}
-
-.checkout-summary h3 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #0f172a;
-    margin-bottom: 20px;
-}
-
-.checkout-summary-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    font-size: 16px;
-}
-
-.checkout-summary-row.total {
-    font-size: 18px;
-    font-weight: 600;
-    color: #0f172a;
-    border-top: 1px solid #e2e8f0;
-    padding-top: 15px;
-    margin-top: 20px;
 }
 
 /* Make the payment column flexible on smaller screens */
@@ -221,19 +115,6 @@ body[data-loading="true"] .checkout-summary {
     background: #fff;
 }
 
-/* modal styles moved to components.css so payment and account modals share the same design */
-
-#payment-methods label {
-    display: block;
-    padding: 10px 15px;
-    border: 1px solid #e6eefb;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    font-size: 15px;
-    color: #0f172a;
-}
-
 .checkout-btn {
     width: 100%;
     padding: 15px;
@@ -244,7 +125,7 @@ body[data-loading="true"] .checkout-summary {
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all 0.2s;
 }
 
 .checkout-btn:hover {
@@ -257,5 +138,3 @@ body[data-loading="true"] .checkout-summary {
     max-height: 420px;
     overflow: auto;
 }
-
-/* modal helpers moved to components.css */

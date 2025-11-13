@@ -39,6 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (_) {}
         }
     }
+    // Expose a global shortcut so other scripts can call notify() safely
+    try { window.notify = notify; } catch (e) { /* ignore in strict environments */ }
 
     async function fetchAllAddresses() {
         try {
@@ -63,12 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // We'll update both the account preview (if present) and the settings addresses list so they stay in sync
         const acctContainer = document.getElementById('account-addresses');
         const settingsContainer = document.getElementById('addresses-list');
+        // If we're on the checkout page, don't render into the settings addresses list
+        const onCheckout = !!document.querySelector('main.checkout-page');
         if (!acctContainer && !settingsContainer) return;
         if (acctContainer) acctContainer.innerHTML = '';
-        if (settingsContainer) settingsContainer.innerHTML = '';
+        if (settingsContainer && !onCheckout) settingsContainer.innerHTML = '';
         if (!Array.isArray(list) || list.length === 0) {
             if (acctContainer) acctContainer.innerHTML = '<div style="color:#666">No saved addresses</div>';
-            if (settingsContainer) settingsContainer.innerHTML = '<div style="color:#666">No saved addresses</div>';
+            if (settingsContainer && !onCheckout) settingsContainer.innerHTML = '<div style="color:#666">No saved addresses</div>';
             return;
         }
         // build preview up to 2 addresses: default first, then next
@@ -83,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // if no default and list has at least 2, take first two
         if (preview.length === 0) preview.push(list[0]);
 
-        // We'll render cards into both containers and attach click handlers so selection updates both
+        // We'll render cards into the account preview (up to 2) and render ALL addresses into the settings list
         preview.forEach(a => {
             const country = (!a.country || a.country === '0') ? 'Philippines' : a.country;
             const html = `
@@ -101,8 +105,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             if (acctContainer) acctContainer.insertAdjacentHTML('beforeend', html);
-            if (settingsContainer) settingsContainer.insertAdjacentHTML('beforeend', html);
         });
+
+        // Render full list into settings panel (if present and not on checkout)
+        if (settingsContainer && !onCheckout) {
+            settingsContainer.innerHTML = '';
+            list.forEach(a => {
+                const country = (!a.country || a.country === '0') ? 'Philippines' : a.country;
+                const html = `
+                    <div class="address-card" data-address-id="${escapeHtml(a.address_id)}">
+                        <div class="addr-main">
+                            <strong>${escapeHtml(a.full_name)}</strong>
+                            <span style="color:#64748b; font-size:14px">(${escapeHtml(a.phone)})</span>
+                            <div style="margin-top:5px; color:#64748b; font-size:14px">${escapeHtml(a.house_number ? a.house_number + ', ' : '')}${escapeHtml(a.street)}</div>
+                            <div style="margin-top:5px; color:#64748b; font-size:14px">${escapeHtml(a.city)}${a.barangay ? (', Barangay ' + escapeHtml(a.barangay)) : ''}</div>
+                            <div style="margin-top:5px; color:#64748b; font-size:14px">${escapeHtml(a.province)}, ${escapeHtml(a.postal_code || '')}, ${escapeHtml(country)}</div>
+                        </div>
+                        <div class="addr-actions">
+                            ${Number(a.is_default) === 1 || a.is_default === '1' ? '<span class="default-badge">Default</span>' : ''}
+                        </div>
+                    </div>
+                `;
+                settingsContainer.insertAdjacentHTML('beforeend', html);
+            });
+    }
 
         // Attach click handlers to newly-inserted cards in both containers
         const attachClick = (root) => {
@@ -133,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
         attachClick(acctContainer);
-        attachClick(settingsContainer);
+        if (!onCheckout) attachClick(settingsContainer);
     }
 
     // show manager list in modal
@@ -279,8 +305,20 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'none';
     }
 
+    let isSavingAddress = false; // prevent duplicate submissions
     async function saveAddress(ev) {
         ev.preventDefault();
+        // Prevent duplicate submission if already in progress
+        if (isSavingAddress) return;
+        isSavingAddress = true;
+        
+        const saveBtn = document.getElementById('modal-save');
+        const originalText = saveBtn ? saveBtn.textContent : 'Save';
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+        }
+        
         const payload = {
             full_name: fld.full_name.value.trim(),
             phone: fld.phone.value.trim(),
@@ -293,6 +331,16 @@ document.addEventListener('DOMContentLoaded', () => {
             country: fld.country.value.trim()
         };
         const id = fld.id.value;
+        // Validate phone: if provided, must be 11 digits
+        if (payload.phone && !/^\d{11}$/.test(payload.phone)) {
+            notify('Phone number must be 11 digits', 'error');
+            isSavingAddress = false;
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }
+            return;
+        }
         try {
             if (id) {
                 payload.address_id = id;
@@ -309,9 +357,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderPreview(list2);
                     managerListWrap.style.display = '';
                     form.style.display = 'none';
+                    isSavingAddress = false;
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = originalText;
+                    }
                     try { document.getElementById('addr-modal-title').textContent = 'Manage Addresses'; } catch (e) {}
                 } else {
                     notify('Save failed', 'error');
+                    isSavingAddress = false;
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = originalText;
+                    }
                 }
             } else {
                 const r = await fetch('api/addresses.php', {
@@ -327,14 +385,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderPreview(list2);
                     managerListWrap.style.display = '';
                     form.style.display = 'none';
+                    isSavingAddress = false;
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = originalText;
+                    }
                     try { document.getElementById('addr-modal-title').textContent = 'Manage Addresses'; } catch (e) {}
                 } else {
                     notify('Save failed', 'error');
+                    isSavingAddress = false;
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = originalText;
+                    }
                 }
             }
         } catch (err) {
             console.error(err);
             notify('Save failed', 'error');
+            isSavingAddress = false;
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }
         }
     }
 
@@ -456,6 +529,31 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { /* ignore */ }
 });
 
+// Show toast notification when redirected with status query params (e.g., ?verified=1 or ?2fa_enabled=1)
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const sp = new URLSearchParams(window.location.search || '');
+        const notifyIf = (key, message, type='success') => {
+            if (sp.get(key) && (sp.get(key) === '1' || sp.get(key) === 'true')) {
+                try {
+                    if (typeof window.notify === 'function') window.notify(message, type);
+                    else if (typeof showNotification === 'function') showNotification(message, type);
+                    else alert(message);
+                } catch (e) { try { alert(message); } catch (_) {} }
+                // remove the query param so refresh won't show it again
+                sp.delete(key);
+                const newSearch = sp.toString();
+                const newUrl = window.location.pathname + (newSearch ? ('?' + newSearch) : '') + window.location.hash;
+                history.replaceState({}, document.title, newUrl);
+            }
+        };
+        notifyIf('verified', 'Email verified successfully.');
+        notifyIf('2fa_enabled', 'Two-factor authentication enabled.');
+        notifyIf('logged_in', 'You are now logged in.');
+        notifyIf('logged_out_all', 'Logged out from all devices.');
+    } catch (e) { /* ignore */ }
+});
+
 // Settings nav behavior: switch panels inside Settings tab
 document.addEventListener('DOMContentLoaded', () => {
     const navItems = document.querySelectorAll('.settings-nav-item');
@@ -541,42 +639,105 @@ document.addEventListener('DOMContentLoaded', () => {
     if (changePwBtn) changePwBtn.addEventListener('click', (e)=>{ e.preventDefault(); const panel = document.getElementById('change-password-panel'); if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none'; });
 
     const saveAccountBtn = document.getElementById('settings-save-account');
-    if (saveAccountBtn) saveAccountBtn.addEventListener('click', (e)=>{
+    if (saveAccountBtn) saveAccountBtn.addEventListener('click', async (e)=>{
         e.preventDefault();
-        // copy values into main account form and submit
-        const acctForm = document.getElementById('account-form');
-        if (acctForm) {
-            const aName = document.getElementById('settings-fullname');
-            const aPhone = document.getElementById('settings-phone');
-            if (aName) document.getElementById('acct-name').value = aName.value || '';
-            if (aPhone) document.getElementById('acct-phone').value = aPhone.value || '';
-            acctForm.submit();
+        const aName = document.getElementById('settings-fullname');
+        const aPhone = document.getElementById('settings-phone');
+        const name = aName ? aName.value.trim() : '';
+        const phone = aPhone ? aPhone.value.trim() : '';
+        if (!name) { alert('Please enter your full name'); return; }
+        // validate phone
+        if (phone && !/^\d{11}$/.test(phone)) { alert('Phone number must be 11 digits'); return; }
+        // confirm action
+        if (!confirm('Save changes to your personal information?')) return;
+        saveAccountBtn.disabled = true; saveAccountBtn.textContent = 'Saving...';
+        try {
+            const res = await fetch('api/update_profile.php', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name: name, phone: phone }) });
+            const j = await res.json().catch(()=>({ success: false }));
+            if (j && j.success) {
+                try { if (typeof showNotification === 'function') showNotification('Profile updated', 'success'); else alert('Profile updated'); } catch(e) {}
+                // update readonly account display fields so the Account panel reflects changes
+                const acctName = document.getElementById('acct-name');
+                const acctPhone = document.getElementById('acct-phone');
+                if (acctName) acctName.value = name;
+                if (acctPhone) acctPhone.value = phone;
+                // update header display fullname while preserving verification icon if present
+                const header = document.getElementById('user-fullname');
+                if (header) {
+                    const icon = header.querySelector('i');
+                    header.textContent = name;
+                    if (icon) header.appendChild(icon);
+                }
+            } else {
+                alert((j && j.message) ? j.message : 'Failed to update profile');
+            }
+        } catch (err) {
+            console.error(err); alert('Failed to update profile');
+        } finally {
+            saveAccountBtn.disabled = false; saveAccountBtn.textContent = 'Save';
         }
     });
 
     const delAccountBtn = document.getElementById('settings-delete-account');
     if (delAccountBtn) delAccountBtn.addEventListener('click', (e)=>{ e.preventDefault(); const confirmDel = confirm('Delete your account? This cannot be undone.'); if (!confirmDel) return; document.getElementById('acct-delete') && document.getElementById('acct-delete').click(); });
 
-    // Edit password link (new UI): show the change-password panel
+    // Edit password link (new UI): if there's an in-page change-password panel, toggle it;
+    // otherwise allow the anchor to navigate to the dedicated password page.
     const editPwLink = document.getElementById('settings-edit-password');
-    if (editPwLink) editPwLink.addEventListener('click', (e)=>{ e.preventDefault(); const panel = document.getElementById('change-password-panel'); if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none'; if (panel) panel.scrollIntoView({behavior:'smooth'}); });
+    if (editPwLink) editPwLink.addEventListener('click', (e)=>{
+        const panel = document.getElementById('change-password-panel');
+        if (panel) {
+            e.preventDefault();
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            panel.scrollIntoView({behavior:'smooth'});
+        }
+        // if panel is not present, do nothing and allow the link to navigate
+    });
 
-    // 2FA toggle: attempt to notify server (if endpoint exists), otherwise keep client-side state
+    // 2FA toggle: attempt to notify server. Enabling triggers a verification email
+    // so we do not mark the preference as active until the user clicks the email link.
     const faToggle = document.getElementById('settings-2fa-toggle');
     if (faToggle) faToggle.addEventListener('change', async (e)=>{
         const enable = faToggle.checked ? 1 : 0;
         try {
-            const res = await fetch('auth/2fa_toggle.php', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({enable})});
+            const res = await fetch('auth/2fa_toggle.php', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                credentials: 'same-origin',
+                body: JSON.stringify({enable})
+            });
             if (res.ok) {
                 const j = await res.json().catch(()=>({success:false}));
-                if (j && j.success) notify('Two-factor preference updated','success');
-                else notify(j && j.message ? j.message : 'Two-factor update failed','error');
+                if (j && j.success) {
+                    if (enable === 1) {
+                        // Verification email was sent; 2FA is not active until verified.
+                        // Revert the checkbox to reflect the current active state in DB.
+                        faToggle.checked = false;
+                        notify(j.message || 'Verification email sent. Click the link in your email to enable 2FA.', 'info');
+                        // If server provided a redirect (to verify page), follow it so user can enter the code.
+                        if (j.redirect) {
+                            // small delay so the notification is visible before navigation
+                            setTimeout(() => { window.location.href = j.redirect; }, 200);
+                        }
+                    } else {
+                        // disabled successfully
+                        notify(j.message || 'Two-factor disabled', 'success');
+                    }
+                } else {
+                    // show server-provided message when available
+                    notify(j && j.message ? j.message : 'Two-factor update failed','error');
+                    // revert checkbox to previous state
+                    faToggle.checked = enable === 1 ? false : true;
+                }
             } else {
                 notify('Two-factor update not available on server','error');
+                // revert checkbox
+                faToggle.checked = enable === 1 ? false : true;
             }
         } catch (err) {
-            // backend may not implement toggle endpoint; just show a hint
+            // backend may not implement toggle endpoint; just show a hint and revert
             notify('Two-factor toggle not available (server)', 'info');
+            faToggle.checked = enable === 1 ? false : true;
         }
     });
 
@@ -585,10 +746,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutAllBtn) logoutAllBtn.addEventListener('click', async (e)=>{
         e.preventDefault(); if (!confirm('Logout from all devices?')) return;
         try {
-            const res = await fetch('auth/logout_all.php', {method:'POST'});
+            // include credentials so same-origin session cookie is sent
+            const res = await fetch('auth/logout_all.php', {method:'POST', credentials: 'same-origin'});
             if (res.ok) {
                 const j = await res.json().catch(()=>({success:false}));
-                if (j && j.success) { notify('All sessions logged out', 'success'); }
+                if (j && j.success) {
+                    // After logging out all sessions, navigate to the index so the site reloads
+                    // and the landing page can show the logout-all toast (handled by index.js).
+                    window.location.href = '/artine3/index.php?logged_out_all=1';
+                    return;
+                }
                 else notify(j && j.message ? j.message : 'Logout all failed', 'error');
             } else {
                 notify('Logout-all endpoint not available on server', 'error');
@@ -598,7 +765,95 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Live update session labels on the Security panel
+    function updateSessionLabels() {
+        try {
+            document.querySelectorAll('.active-sessions .sessions-list li').forEach(li => {
+                const status = li.getAttribute('data-status') || 'active';
+                const lastSeen = li.getAttribute('data-last-seen') || '';
+                const logoutTime = li.getAttribute('data-logout-time') || '';
+                const labelEl = li.querySelector('.session-label');
+                if (!labelEl) return;
+
+                const now = Date.now();
+                let ts = null;
+                if (status !== 'active') {
+                    if (logoutTime) ts = Date.parse(logoutTime);
+                    else if (lastSeen) ts = Date.parse(lastSeen);
+                } else {
+                    if (lastSeen) ts = Date.parse(lastSeen);
+                }
+
+                if (!ts || isNaN(ts)) {
+                    // fallback to existing text
+                    return;
+                }
+
+                const diff = Math.floor((now - ts) / 1000);
+                let text = '';
+                if (status !== 'active') {
+                    if (diff < 60) text = 'Logged out just now';
+                    else if (diff < 3600) text = 'Active ' + Math.floor(diff/60) + ' minutes ago';
+                    else if (diff < 86400) text = 'Active ' + Math.floor(diff/3600) + ' hours ago';
+                    else text = 'Active ' + Math.floor(diff/86400) + ' days ago';
+                } else {
+                    if (diff < 5*60) text = 'Active now';
+                    else if (diff < 3600) text = 'Logged in ' + Math.floor(diff/60) + ' minutes ago';
+                    else if (diff < 86400) text = 'Logged in ' + Math.floor(diff/3600) + ' hours ago';
+                    else text = 'Last seen ' + Math.floor(diff/86400) + ' days ago';
+                }
+                labelEl.textContent = text;
+            });
+        } catch (e) { console.warn('session label update failed', e); }
+    }
+
+    // Refresh labels every second while the account page is visible
+    setInterval(updateSessionLabels, 1000);
+
+    // Poll server for updated session states and refresh DOM attributes every 5 seconds
+    async function pollSessionsFromServer() {
+        try {
+            const res = await fetch('/artine3/api/get_sessions.php', { credentials: 'same-origin', cache: 'no-store' });
+            if (!res.ok) return;
+            const j = await res.json().catch(() => null);
+            if (!j || !j.success || !Array.isArray(j.sessions)) return;
+
+            // update each DOM li if present
+            j.sessions.forEach(s => {
+                if (!s.session_id) return;
+                const li = document.querySelector('.active-sessions .sessions-list li[data-session-id="' + CSS.escape(s.session_id) + '"]');
+                if (!li) return;
+                // normalize times to ISO if possible (server sends DB format; Date.parse handles several formats)
+                if (s.last_seen) li.setAttribute('data-last-seen', new Date(s.last_seen).toISOString());
+                else li.removeAttribute('data-last-seen');
+                if (s.logout_time) li.setAttribute('data-logout-time', new Date(s.logout_time).toISOString());
+                else li.removeAttribute('data-logout-time');
+                if (s.status) li.setAttribute('data-status', s.status);
+            });
+            // refresh labels immediately after update
+            updateSessionLabels();
+        } catch (e) { /* ignore polling errors */ }
+    }
+
+    // Start polling only if security panel exists
+    if (document.querySelector('.active-sessions')) {
+        // initial poll to pick up cross-tab changes
+        pollSessionsFromServer();
+        setInterval(pollSessionsFromServer, 5000);
+    }
+
     // Panel logout button (simple confirmation)
     const panelLogoutBtn = document.getElementById('panel-logout-btn');
     if (panelLogoutBtn) panelLogoutBtn.addEventListener('click', (e)=>{ e.preventDefault(); if (!confirm('Are you sure you want to logout?')) return; window.location.href = 'logout.php'; });
+
+    // confirm change password submission
+    const changePasswordForm = document.getElementById('change-password-form');
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', function (e) {
+            if (!confirm('Are you sure you want to change your password?')) {
+                e.preventDefault();
+                return;
+            }
+        });
+    }
 });

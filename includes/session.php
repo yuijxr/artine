@@ -4,6 +4,31 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Update last_seen for current session on each page load so activity is tracked
+try {
+    if (session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION['user_id'])) {
+        $sid = session_id();
+        // Only attempt DB update if session id available
+        if (!empty($sid)) {
+            // ensure we have a DB connection; many pages include db_connect before session, but be defensive
+            if (empty($conn) && file_exists(__DIR__ . '/db_connect.php')) {
+                // include db_connect which defines $conn
+                require_once __DIR__ . '/db_connect.php';
+            }
+            if (!empty($conn)) {
+                try {
+                    $up = $conn->prepare('UPDATE sessions SET last_seen = NOW(), `status` = ? WHERE session_id = ?');
+                    if ($up) { $st = 'active'; $up->bind_param('ss', $st, $sid); $up->execute(); $up->close(); }
+                } catch (Exception $e) {
+                    // ignore DB errors
+                }
+            }
+        }
+    }
+} catch (Throwable $e) {
+    // ignore any errors here to avoid breaking page load
+}
+
 /**
  * Return true if a user_id is set in session
  */

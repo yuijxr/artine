@@ -10,6 +10,22 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const mannequinPanel = document.querySelector('.mannequin-content');
     const settingsPanel = document.querySelector('.settings-panel');
 
+    // Helper: format a Date (or date-string) to the order-arrival display used elsewhere
+    function formatOrderDate(dIn){
+        try{
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const d = (dIn instanceof Date) ? dIn : new Date(String(dIn).replace(' ', 'T'));
+            if (isNaN(d.getTime())) return '';
+            const month = months[d.getMonth()];
+            const day = d.getDate();
+            const year = d.getFullYear();
+            const hour = d.getHours() % 12 || 12;
+            const mins = String(d.getMinutes()).padStart(2, '0');
+            const ampm = d.getHours() >= 12 ? 'pm' : 'am';
+            return `${month} ${day}, ${year} | ${hour}:${mins}${ampm}`;
+        }catch(e){ return ''; }
+    }
+
     function clearActiveTabs(){ tabs.forEach(t=>t.classList.remove('active')); }
     function hideAllPanels(){ 
         if (accountPanel) accountPanel.style.display='none'; 
@@ -91,7 +107,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
                     if (j.success) {
                         const orderEl = btn.closest('.order-item'); if (!orderEl) return;
                         const header = orderEl.querySelector('.order-header'); const statusSpan = orderEl.querySelector('.order-status');
-                        const arrEl = header ? header.querySelector('.order-arrival') : null; if (arrEl) arrEl.remove();
+                        // Insert/update a live arrival timestamp so the user sees when the status changed
+                        const when = formatOrderDate(new Date());
+                        const dateHtml = `<p class="order-arrival">${isCancel ? 'Cancelled on ' : 'Returned on '}${when}</p>`;
+                        const right = header ? header.querySelector('.order-right') : null;
+                        if (right) right.innerHTML = dateHtml;
+                        else if (header) header.insertAdjacentHTML('beforeend', '<div class="order-right">' + dateHtml + '</div>');
                         if (isCancel) { statusSpan.textContent = 'cancelled'; statusSpan.className = 'order-status cancelled'; orderEl.dataset.status = 'cancelled'; }
                         else { statusSpan.textContent = 'Returned'; statusSpan.className = 'order-status returned'; orderEl.dataset.status = 'returned'; }
                         btn.remove();
@@ -228,7 +249,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             else if (data && Array.isArray(data.orders)) { orders = data.orders; apiCounts = data.counts || null; }
             if (!Array.isArray(orders) || orders.length === 0){
                 // show styled empty orders block (matches empty cart)
-                const emptyHtml = '<div class="empty-orders"><div class="empty-orders-content"><i class="fa fa-box"></i><h2>No orders yet</h2><p>Looks like you haven\'t placed any orders yet.</p><a href="index.php" class="shop-now-btn">Shop Now</a></div></div>';
+                const emptyHtml = '<div class="empty-orders"><div class="empty-orders-content"><i class="fa fa-box"></i><h2>No orders yet</h2><p>Looks like you haven\'t placed any orders yet.</p><a href="index.php" class="big-btn btn primary">Shop Now</a></div></div>';
                 list.innerHTML = emptyHtml;
                 return;
             }
@@ -424,7 +445,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
                     const completable = (statusLower === 'delivered' || statusLower === 'complete');
                     if (cancellable) {
                         const cancelBtn = document.createElement('button');
-                        cancelBtn.className = 'cancel-order-btn action-btn danger';
+                        cancelBtn.className = 'cancel-order-btn btn danger';
                         cancelBtn.textContent = 'Cancel Order';
                         cancelBtn.dataset.id = String(o.order_id);
                         cancelBtn.addEventListener('click', async ()=>{
@@ -434,16 +455,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
                                 const r2 = await fetch('api/cancel_order.php', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ order_id: o.order_id }) });
                                 const j = await r2.json();
                                 if (j.success) {
-                                    // update UI immediately: remove arrival, mark cancelled, re-filter, and show toast
-                                    const arrEl = header.querySelector('.order-arrival'); if (arrEl) arrEl.remove();
+                                    // update UI immediately: insert a live timestamp and mark cancelled, re-filter, and show toast
+                                    const when = formatOrderDate(new Date());
+                                    const dateHtml = `<p class="order-arrival">Cancelled on ${when}</p>`;
+                                    const right = header ? header.querySelector('.order-right') : null;
+                                    if (right) right.innerHTML = dateHtml;
+                                    else if (header) header.insertAdjacentHTML('beforeend', '<div class="order-right">' + dateHtml + '</div>');
                                     statusSpan.textContent = 'Cancelled'; statusSpan.className = 'order-status cancelled';
                                     orderEl.dataset.status = 'cancelled';
                                     cancelBtn.remove();
                                     try{ updateOrdersSummary(); }catch(e){}
                                     applyCurrentFilterToOrder(orderEl);
-                                        // switch to the Cancelled tab so the user sees the cancelled orders
-                                        selectFilterValue('cancelled');
-                                        notify(j.message || 'Order cancelled', 'success');
+                                    // switch to the Cancelled tab so the user sees the cancelled orders
+                                    selectFilterValue('cancelled');
+                                    notify(j.message || 'Order cancelled', 'success');
                                 } else {
                                     alert(j.message || 'Failed to cancel');
                                     cancelBtn.disabled = false; cancelBtn.textContent = 'Cancel Order';
@@ -453,7 +478,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
                         actionsDiv.appendChild(cancelBtn);
                     } else if (completable) {
                         const returnBtn = document.createElement('button');
-                        returnBtn.className = 'return-product-btn action-btn';
+                        returnBtn.className = 'return-product-btn btn danger';
                         returnBtn.textContent = 'Return Order';
                         returnBtn.dataset.id = String(o.order_id);
                         returnBtn.addEventListener('click', async ()=>{
@@ -464,7 +489,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
                                 if (!r2.ok) { const txt = await r2.text(); throw new Error(txt || 'Server error'); }
                                 const j = await r2.json();
                                 if (j.success) {
-                                    const arrEl = header.querySelector('.order-arrival'); if (arrEl) arrEl.remove();
+                                    const when = formatOrderDate(new Date());
+                                    const dateHtml = `<p class="order-arrival">Returned on ${when}</p>`;
+                                    const right = header ? header.querySelector('.order-right') : null;
+                                    if (right) right.innerHTML = dateHtml;
+                                    else if (header) header.insertAdjacentHTML('beforeend', '<div class="order-right">' + dateHtml + '</div>');
                                     statusSpan.textContent = 'Returned'; statusSpan.className = 'order-status returned';
                                     orderEl.dataset.status = 'returned';
                                     returnBtn.remove();
@@ -529,7 +558,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
                         else if (val === 'delivered') title = 'No delivered orders yet';
                         else if (val === 'cancelled') title = 'No cancelled orders yet';
                         else if (val === 'returned') title = 'No returned orders yet';
-                        const emptyHtml = `<div class="empty-orders"><div class="empty-orders-content"><i class="fa fa-box"></i><h2>${title}</h2><p>Looks like you don't have any orders in this section yet.</p><a href="index.php" class="shop-now-btn">Shop Now</a></div></div>`;
+                        const emptyHtml = `<div class="empty-orders"><div class="empty-orders-content"><i class="fa fa-box"></i><h2>${title}</h2><p>Looks like you don't have any orders in this section yet.</p><a href="index.php" class="big-btn btn primary">Shop Now</a></div></div>`;
                         if (!existingEmpty) list.insertAdjacentHTML('beforeend', emptyHtml);
                     } else {
                         if (existingEmpty) existingEmpty.remove();
@@ -568,20 +597,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         }catch(err){ console.error('Failed to load orders', err); list.textContent = 'Failed to load orders'; }
     }
 
-    // Account form actions: minimal; POST to api/update_profile.php if available
-    const acctForm = document.getElementById('account-form') || document.getElementById('account-form');
-    if (acctForm){
-        acctForm.addEventListener('submit', async (e)=>{
-            e.preventDefault();
-            const name = document.getElementById('acct-name').value.trim();
-            const pw = document.getElementById('acct-pw').value;
-            try{
-                const res = await fetch('api/update_profile.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,name,password:pw})});
-                const j = await res.json();
-                if (j.success) alert('Profile updated'); else alert(j.message||'Failed to update');
-            }catch(err){ alert('Failed to update'); console.error(err); }
-        });
-    }
+    // The main account display is read-only; updates are performed through Settings panel.
 
     const delBtn = document.getElementById('acct-delete');
     if (delBtn) delBtn.addEventListener('click', async ()=>{
@@ -668,24 +684,53 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // wire now and also after any dynamic loads
     wirePrefButtons();
 
+    // Apply initial preference events based on current DOM state so the viewer
+    // responds to defaults set in markup (aria-pressed / .active) without a click.
+    function applyInitialPrefs(){
+        try{
+            // skin
+            const skinBtn = document.querySelector('.skin-btn[aria-pressed="true"]');
+            if (skinBtn) {
+                const color = skinBtn.getAttribute('data-skin');
+                window.dispatchEvent(new CustomEvent('mannequin.skin',{detail:{color}}));
+            }
+            // face
+            const faceBtn = document.querySelector('.face-btn.active');
+            if (faceBtn) {
+                const morph = faceBtn.getAttribute('data-morph');
+                window.dispatchEvent(new CustomEvent('mannequin.face',{detail:{morph}}));
+            }
+            // body
+            const bodyBtnPref = document.querySelector('.bodyshape-btn.active');
+            if (bodyBtnPref) {
+                const morph = bodyBtnPref.getAttribute('data-morph');
+                window.dispatchEvent(new CustomEvent('mannequin.shape',{detail:{morph}}));
+            }
+        }catch(e){ console.warn('Failed to apply initial mannequin prefs', e); }
+    }
+
+    // Run immediately (for UI-only changes) and when the mannequin viewer becomes ready
+    applyInitialPrefs();
+    window.addEventListener('mannequin.ready', applyInitialPrefs, { once: true });
+
     // Save measurements / preferences to server when Save button clicked
     (function(){
-        const saveBtn = document.getElementById('save-measurements');
-        if (!saveBtn) return;
-        saveBtn.addEventListener('click', async (ev)=>{
-            ev.preventDefault();
-            // read sliders and metric selects
-            function readMetric(id){
-                const slider = document.getElementById(id);
-                if (!slider) return null;
-                const parent = slider.parentElement;
-                const metric = parent.querySelector('.metric-select') ? parent.querySelector('.metric-select').value : 'cm';
-                let val = parseFloat(slider.value);
-                if (metric === 'inch') val = val * 2.54; // convert to cm
-                return Math.round(val * 100) / 100;
-            }
+        // support multiple Save buttons (one per tab) using class `.save-mannequin`
+        const saveButtons = Array.from(document.querySelectorAll('.save-mannequin'));
+        if (!saveButtons.length) return;
 
-            const payload = {
+        function readMetric(id){
+            const slider = document.getElementById(id);
+            if (!slider) return null;
+            const parent = slider.parentElement;
+            const metric = parent.querySelector('.metric-select') ? parent.querySelector('.metric-select').value : 'cm';
+            let val = parseFloat(slider.value);
+            if (metric === 'inch') val = val * 2.54; // convert to cm
+            return Math.round(val * 100) / 100;
+        }
+
+        function buildPayload(){
+            return {
                 shoulder_width: readMetric('shoulders'),
                 chest_bust: readMetric('chest'),
                 waist: readMetric('waist'),
@@ -695,7 +740,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 face_shape: (document.querySelector('.face-btn.active') || {}).getAttribute ? (document.querySelector('.face-btn.active')?.getAttribute('data-morph')) : null,
                 skin_tone: (document.querySelector('.skin-btn[aria-pressed="true"]') || {}).getAttribute ? (document.querySelector('.skin-btn[aria-pressed="true"]')?.getAttribute('data-skin')) : null
             };
+        }
 
+        async function savePayload(payload){
             try{
                 const resp = await fetch('api/save_mannequin.php', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
                 const j = await resp.json();
@@ -705,7 +752,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
                     try{ alert((j && j.message) || 'Failed to save mannequin'); }catch(e){}
                 }
             }catch(err){ console.error(err); alert('Failed to save mannequin'); }
-        });
+        }
+
+        saveButtons.forEach(btn => btn.addEventListener('click', async (ev)=>{
+            ev.preventDefault();
+            // disable clicked button briefly to prevent duplicates
+            btn.disabled = true;
+            try{
+                await savePayload(buildPayload());
+            } finally {
+                btn.disabled = false;
+            }
+        }));
     })();
 
     // Load saved mannequin values into sliders and preference buttons

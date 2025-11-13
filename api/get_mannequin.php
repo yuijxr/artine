@@ -26,7 +26,8 @@ if ($vstmt) {
 
 $user_id = intval($_SESSION['user_id']);
 
-$stmt = $conn->prepare('SELECT * FROM measurements WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1');
+// Read measurement fields from users table (merged schema)
+$stmt = $conn->prepare('SELECT shoulder_width, chest_bust, waist, torso_length, arm_length, body_shape, face_shape, skin_tone, base_model_url FROM users WHERE user_id = ? LIMIT 1');
 if (!$stmt) { echo json_encode(null); exit; }
 $stmt->bind_param('i', $user_id);
 $stmt->execute();
@@ -36,11 +37,11 @@ $stmt->close();
 
 if ($row) {
     // normalize numeric values
-    $row['shoulder_width'] = $row['shoulder_width'] !== null ? floatval($row['shoulder_width']) : null;
-    $row['chest_bust'] = $row['chest_bust'] !== null ? floatval($row['chest_bust']) : null;
-    $row['waist'] = $row['waist'] !== null ? floatval($row['waist']) : null;
-    $row['torso_length'] = $row['torso_length'] !== null ? floatval($row['torso_length']) : null;
-    $row['arm_length'] = $row['arm_length'] !== null ? floatval($row['arm_length']) : null;
+    $row['shoulder_width'] = isset($row['shoulder_width']) && $row['shoulder_width'] !== null ? floatval($row['shoulder_width']) : null;
+    $row['chest_bust'] = isset($row['chest_bust']) && $row['chest_bust'] !== null ? floatval($row['chest_bust']) : null;
+    $row['waist'] = isset($row['waist']) && $row['waist'] !== null ? floatval($row['waist']) : null;
+    $row['torso_length'] = isset($row['torso_length']) && $row['torso_length'] !== null ? floatval($row['torso_length']) : null;
+    $row['arm_length'] = isset($row['arm_length']) && $row['arm_length'] !== null ? floatval($row['arm_length']) : null;
     echo json_encode($row);
 } else {
     echo json_encode(null);

@@ -74,7 +74,7 @@ function showNotification(message, type = 'info') {
 function showForgotPassword() {
     try {
         // If user is on a SPA/modal-capable page we could open a modal; for now navigate to the request page
-        window.location.href = '/artine3/auth/forgot_password.php';
+        window.location.href = '/artine3/auth/password.php?action=request';
     } catch (e) {
         console.error('Failed to open password reset page', e);
     }
@@ -152,6 +152,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if (params.get('logged_out')){
             if (typeof showNotification === 'function') showNotification('Logged out', 'info');
             params.delete('logged_out'); changed = true;
+        }
+        if (params.get('logged_out_all')){
+            if (typeof showNotification === 'function') showNotification('Logged out from all devices', 'info');
+            params.delete('logged_out_all'); changed = true;
         }
         // If we removed flags, replace the URL without reloading the page
         if (changed){

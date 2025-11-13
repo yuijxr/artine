@@ -8,7 +8,8 @@ if (!is_logged_in()) {
 }
 
 $user = current_user($conn);
-$name = trim($user["first_name"] ?? "") ?: "User";
+// prefer full name for display
+$fullname = trim((($user["first_name"] ?? '') . ' ' . ($user["last_name"] ?? '')) ) ?: 'User';
 $email = htmlspecialchars($user["email"] ?? "");
 
 // small helper: produce a short friendly device string from user agent
@@ -55,16 +56,19 @@ function get_short_agent($ua)
                 <img src="assets/default-avatar.svg" alt="Profile Picture">
             </div>
             <div class="profile-info">
-                <h1 id="user-fullname"><?php echo htmlspecialchars($name); ?></h1>
-                <p class="member-since" id="member-since">Member: <?php echo htmlspecialchars($user['created_at'] ?? ''); ?></p>
-                <p style="margin-top:8px;">
-                    <?php if (isset($user['email_verified']) && $user['email_verified']): ?>
-                        <span style="color:green;font-weight:600;">Email verified</span>
+                <h1 id="user-fullname">
+                    <?php echo htmlspecialchars($fullname); ?>
+                            <?php if (!empty($user['email_verified'])): ?>
+                        <i class="fa fa-check-circle text-success" title="Email verified" aria-hidden="true" style="margin-left: 5px; color: green; font-size:14px;"></i>
                     <?php else: ?>
-                        <span style="color:orange;font-weight:600;">Email not verified</span>
-                        &nbsp;(<a href="/artine3/auth/resend_verification.php">Resend verification</a>)
+                        <a href="/artine3/auth/resend_verification.php" style="margin-left:10px;font-size:14px;color:#0095FF;text-decoration:underline;">Verify</a>
                     <?php endif; ?>
-                </p>
+                </h1>
+                <?php
+                    $created = !empty($user['created_at']) ? date_create_from_format('Y-m-d H:i:s', $user['created_at']) : null;
+                    $memberSinceText = $created ? 'Artine member since ' . date_format($created, 'F Y') : 'Artine member since —';
+                ?>
+                <p class="member-since" id="member-since"><?php echo htmlspecialchars($memberSinceText); ?></p>
             </div>
         </div>
         <div class="profile-tabs">
@@ -87,20 +91,13 @@ function get_short_agent($ua)
                                 <label>Full name</label>
                                 <input class="input-form" type="text" id="acct-name" value="<?php echo htmlspecialchars(
                         $user["first_name"] . " " . $user["last_name"],
-                    ); ?>">
+                    ); ?>" readonly>
                             </div>
                             <div class="form-row">
                                 <label>Phone</label>
                                 <input class="input-form" type="text" id="acct-phone" value="<?php echo htmlspecialchars(
                         $user["phone"] ?? "",
-                    ); ?>">
-                            </div>
-                            <div class="form-row">
-                                <label>New password</label>
-                                <input class="input-form" type="password" id="acct-pw" placeholder="Leave blank to keep current">
-                            </div>
-                            <div style="display:flex; justify-content:flex-end;">
-                                <button id="acct-save" class="btn primary">Save</button>
+                    ); ?>" readonly>
                             </div>
                         </form>
                     </div>
@@ -330,7 +327,7 @@ function get_short_agent($ua)
                         $actions_html = "";
                         if (in_array($statusLower, ["pending", "paid"])) {
                             $actions_html .=
-                                '<button class="cancel-order-btn action-btn danger" data-id="' .
+                                '<button class="cancel-order-btn btn danger" data-id="' .
                                 intval($ord["order_id"]) .
                                 '">Cancel Order</button>';
                         } elseif (
@@ -341,7 +338,7 @@ function get_short_agent($ua)
                             ])
                         ) {
                             $actions_html .=
-                                '<button class="return-product-btn action-btn" data-id="' .
+                                '<button class="return-product-btn btn danger" data-id="' .
                                 intval($ord["order_id"]) .
                                 '">Return Order</button>';
                         }
@@ -349,7 +346,7 @@ function get_short_agent($ua)
                         $orders_html .=
                             '<div class="order-item" data-status="' .
                             htmlspecialchars($statusLower) .
-                            '" style="margin-bottom:15px;">';
+                            '">';
                         $orders_html .=
                             '<div class="order-header"><div class="order-left"><span class="order-status ' .
                             htmlspecialchars($statusLower) .
@@ -411,15 +408,15 @@ function get_short_agent($ua)
             </div>
             <div class="tab-panel settings-panel" style="display:none;">
                 <div class="section-content">
-                    <div class="settings-layout" style="display:flex;gap:24px;margin-top:18px;align-items:flex-start;">
-                        <nav class="settings-nav" style="width:260px;">
-                            <ul style="list-style:none;padding:0;margin:0;">
-                                <li><button class="settings-nav-item active" data-panel="panel-account"> <i class="fa fa-user" style="width:22px;"></i> Account Details</button></li>
-                                <li><button class="settings-nav-item" data-panel="panel-payments"> <i class="fa fa-credit-card" style="width:22px;"></i> Payment Methods</button></li>
-                                <li><button class="settings-nav-item" data-panel="panel-addresses"> <i class="fa fa-box" style="width:22px;"></i> Delivery Addresses</button></li>
-                                <li><button class="settings-nav-item" data-panel="panel-privacy"> <i class="fa fa-shield-alt" style="width:22px;"></i> Privacy and Data Control</button></li>
-                                <li><button class="settings-nav-item" data-panel="panel-security"> <i class="fa fa-lock" style="width:22px;"></i> Security Settings</button></li>
-                                <li><button class="settings-nav-item" id="settings-logout-nav"> <i class="fa fa-sign-out-alt" style="width:22px;"></i> Logout</button></li>
+                    <div class="settings-layout">
+                        <nav class="settings-nav">
+                            <ul>
+                                <li><button class="settings-nav-item active" data-panel="panel-account"> <i class="fa fa-user"></i> Account Details</button></li>
+                                <li><button class="settings-nav-item" data-panel="panel-payments"> <i class="fa fa-credit-card"></i> Payment Methods</button></li>
+                                <li><button class="settings-nav-item" data-panel="panel-addresses"> <i class="fa fa-box"></i> Delivery Addresses</button></li>
+                                <li><button class="settings-nav-item" data-panel="panel-privacy"> <i class="fa fa-shield-alt"></i> Privacy and Data Control</button></li>
+                                <li><button class="settings-nav-item" data-panel="panel-security"> <i class="fa fa-lock"></i> Security Settings</button></li>
+                                <li><button class="settings-nav-item" id="settings-logout-nav"> <i class="fa fa-sign-out-alt"></i> Logout</button></li>
                             </ul>
                         </nav>
 
@@ -427,7 +424,7 @@ function get_short_agent($ua)
                             <!-- Account Details panel -->
                             <section id="panel-account" class="settings-panel-content">
                                 <h3>Account Details</h3>
-                                <form id="settings-account-form" class="auth-form" style="max-width:720px;">
+                                <form id="settings-account-form" class="auth-form">
                                     <div class="form-group">
                                         <label>Email</label>
                                         <input class="input-form" type="email" id="settings-email" value="<?php echo $email; ?>" readonly>
@@ -440,9 +437,9 @@ function get_short_agent($ua)
                                         <label>Phone</label>
                                         <input class="input-form" type="tel" id="settings-phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>">
                                     </div>
-                                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;">
-                                        <div><button id="settings-save-account" class="btn btn--primary">Save</button></div>
-                                        <div><button id="settings-delete-account" class="action-btn danger">Delete account</button></div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; gap:10px; margin-top: 10px;">
+                                        <div><button id="settings-save-account" class="btn primary">Save</button></div>
+                                        <div><button id="settings-delete-account" class="btn danger">Delete account</button></div>
                                     </div>
                                 </form>
                             </section>
@@ -454,7 +451,7 @@ function get_short_agent($ua)
                                     <a href="#" id="settings-manage-payments" class="manage-link">Manage</a>
                                 </div>
                                 <p>Below are the payment methods available on Artine. Click a method to select it for quick checkout.</p>
-                                <div id="payments-list" style="margin-top:12px;display:flex;flex-direction:column;gap:10px;">
+                                <div id="payments-list" style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
                                     <?php
                                     // Render payment methods (available methods in the system) as pm-cards
                                     $pmRes = $conn->query('SELECT method_id, name FROM payment_methods');
@@ -522,7 +519,7 @@ function get_short_agent($ua)
                             <!-- Privacy panel -->
                             <section id="panel-privacy" class="settings-panel-content" style="display:none;">
                                 <h3>Privacy and Data Control</h3>
-                                <div class="privacy-text" style="margin-top:12px;max-width:820px;color:#444;line-height:1.6;">
+                                <div class="privacy-text" style="margin-top: 10px; max-width: 820px; color: #444; line-height: 1.5;">
                                     <p><strong>Artine Clothing Privacy Notice</strong></p>
                                     <p>Artine Clothing (“we”, “our”, “us”) respects your privacy and is committed to protecting your personal data. This notice explains how we collect, use, disclose, and safeguard your information when you visit our website or make purchases through our services.</p>
                                     <p>We collect information you provide directly (such as your name, email, phone, delivery address, and payment details), information collected automatically (such as device and usage data), and information from third parties when you authorize it. We use this information to process orders, communicate with you, personalize your experience, improve our products and services, prevent fraud, and comply with legal obligations.</p>
@@ -537,22 +534,22 @@ function get_short_agent($ua)
                                 <h3>Security Settings</h3>
                                 <p>Manage your password, two-factor authentication, and active sessions.</p>
 
-                                <div class="security-row" style="margin-top:12px;max-width:720px;">
+                                <div class="security-row" style="margin-top: 10px; max-width: 720px;">
                                     <label>Password</label>
-                                    <div class="input-with-action" style="margin-top:6px;">
+                                    <div class="input-with-action" style="margin-top:5px;">
                                         <input class="input-form" type="password" id="settings-password-placeholder" value="********" readonly aria-label="Password placeholder">
-                                        <button id="settings-edit-password" class="inline-action" type="button">Edit</button>
+                                        <a id="settings-edit-password" class="inline-action" href="/artine3/auth/password.php?action=change">Edit</a>
                                     </div>
                                 </div>
 
-                                <div class="security-row" style="margin-top:12px;max-width:720px;display:flex;align-items:center;justify-content:space-between;">
-                                    <div style="display:flex;align-items:center;gap:12px;">
+                                <div class="security-row" style="margin-top: 10px; max-width: 720px; display: flex; align-items: center; justify-content: space-between;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
                                         <label for="settings-2fa-toggle">Enable Email 2FA</label>
                                         <label class="toggle-switch" title="Enable or disable email two-factor">
                                             <input type="checkbox" id="settings-2fa-toggle" <?php echo (!empty($user['email_2fa_enabled']) ? 'checked' : ''); ?> />
                                         </label>
                                     </div>
-                                    <div style="color:#666;font-size:13px;">Two-factor via email adds an extra step at login.</div>
+                                    <div style="color: #666; font-size: 14px;">Two-factor via email adds an extra step at login.</div>
                                 </div>
 
                                 <?php
@@ -581,7 +578,8 @@ function get_short_agent($ua)
 
                                 // Fetch sessions for this user
                                 $sessions = [];
-                                $sessStmt = $conn->prepare('SELECT session_id, ip, user_agent, last_seen, created_at FROM sessions WHERE user_id = ? ORDER BY last_seen DESC');
+                                // include status and logout_time so we can render logged-out sessions correctly
+                                $sessStmt = $conn->prepare('SELECT session_id, ip, user_agent, last_seen, created_at, `status`, logout_time FROM sessions WHERE user_id = ? ORDER BY last_seen DESC');
                                 if ($sessStmt) {
                                     $uid4 = intval($user['user_id'] ?? ($_SESSION['user_id'] ?? 0));
                                     $sessStmt->bind_param('i', $uid4);
@@ -592,45 +590,166 @@ function get_short_agent($ua)
                                     $sessStmt->close();
                                 }
 
+                                // Deduplicate and prune sessions by (user_id, ip): keep at most two entries per ip.
+                                // Preference when keeping up to two per ip:
+                                // 1) keep current session if present
+                                // 2) keep active sessions (status = 'active') by recency
+                                // 3) if still space, keep most recent sessions regardless of status
+                                // If there are 3+ sessions for the same user and ip, delete the older ones from DB (excluding current session).
+                                // For display, only show up to two entries per ip (most recent/preferred)
+                                $currentSid = session_id();
+                                $byIp = [];
+                                foreach ($sessions as $s) {
+                                    $key = ($s['ip'] ?? 'unknown');
+                                    if (!isset($byIp[$key])) $byIp[$key] = [];
+                                    $byIp[$key][] = $s;
+                                }
+
+                                $displaySessions = [];
+                                foreach ($byIp as $ip => $group) {
+                                    // ensure group is sorted by last_seen desc (recent first)
+                                    usort($group, function($a, $b){
+                                        $ta = strtotime($a['last_seen'] ?? $a['created_at'] ?? '1970-01-01');
+                                        $tb = strtotime($b['last_seen'] ?? $b['created_at'] ?? '1970-01-01');
+                                        return $tb <=> $ta;
+                                    });
+
+                                    // decide which session_ids to keep (max 2)
+                                    $keep = [];
+                                    // prefer to keep current session if present
+                                    foreach ($group as $g) {
+                                        if (!empty($currentSid) && ($g['session_id'] ?? '') === $currentSid) {
+                                            $keep[] = $g['session_id'];
+                                            break;
+                                        }
+                                    }
+                                    // fill remaining keeps from most recent (avoid duplicates)
+                                    foreach ($group as $g) {
+                                        if (count($keep) >= 2) break;
+                                        if (in_array($g['session_id'], $keep)) continue;
+                                        $keep[] = $g['session_id'];
+                                    }
+
+                                    // delete any extras (3rd, 4th, ...) from DB
+                                    if (count($group) > count($keep)) {
+                                        try {
+                                            $delStmt = $conn->prepare('DELETE FROM sessions WHERE session_id = ?');
+                                            if ($delStmt) {
+                                                foreach ($group as $g) {
+                                                    $sid = $g['session_id'] ?? null;
+                                                    if (!$sid) continue;
+                                                    if (in_array($sid, $keep)) continue;
+                                                    // don't delete the current session (defensive)
+                                                    if (!empty($currentSid) && $sid === $currentSid) continue;
+                                                    $delStmt->bind_param('s', $sid);
+                                                    $delStmt->execute();
+                                                }
+                                                $delStmt->close();
+                                            }
+                                        } catch (Exception $e) {
+                                            // ignore deletion errors; continue to build display list
+                                        }
+                                    }
+
+                                    // Add up to two sessions from this group to the display list (match keep ordering)
+                                    $added = 0;
+                                    foreach ($group as $g) {
+                                        if ($added >= 2) break;
+                                        if (!in_array($g['session_id'], $keep)) continue; // only show kept ones
+                                        $displaySessions[] = $g;
+                                        $added++;
+                                    }
+                                }
+
+                                // Replace sessions with displaySessions for rendering
+                                $sessions = $displaySessions;
+
                                 // Current PHP session id to mark active session
                                 $currentSid = session_id();
                                 ?>
 
-                                <div class="security-activity card" style="margin-top:18px;max-width:720px;">
+                                <div class="security-activity card">
                                     <h4 style="margin:0 0 8px 0;">Recent activity</h4>
                                     <div class="activity-line">Last Login: <?php echo $fmt ?: '—'; ?></div>
                                     <div class="activity-line">Current Device: <?php echo htmlspecialchars(get_short_agent($_SERVER['HTTP_USER_AGENT'] ?? '')); ?> (IP: <?php echo htmlspecialchars($_SERVER['REMOTE_ADDR'] ?? 'Unknown'); ?>)</div>
-                                    <div class="activity-line">Location (optional): <?php echo $locationLabel ?: '—'; ?></div>
+                                    <div class="activity-line">Location: <?php echo $locationLabel ?: '—'; ?></div>
                                 </div>
 
-                                <div class="active-sessions card" style="margin-top:16px;max-width:720px;">
+                                <div class="active-sessions card" style="margin-top: 15px; max-width: 720px;">
                                     <h4 style="margin:0 0 8px 0;">Active sessions</h4>
                                     <?php if (empty($sessions)): ?>
                                         <div style="color:#666">No active sessions found.</div>
                                     <?php else: ?>
                                         <ul class="sessions-list">
                                             <?php foreach ($sessions as $s):
+                                                // Use status and logout_time when present to show Active vs Logged out
+                                                $status = strtolower(trim($s['status'] ?? 'active'));
                                                 $lastSeen = $s['last_seen'] ?? $s['created_at'] ?? null;
+                                                $logoutTime = $s['logout_time'] ?? null;
                                                 $label = '—';
-                                                if ($lastSeen) {
-                                                    $diff = time() - strtotime($lastSeen);
-                                                    if ($diff < 300) $label = 'Active now';
-                                                    elseif ($diff < 3600) $label = 'Logged in ' . floor($diff/60) . ' minutes ago';
-                                                    elseif ($diff < 86400) $label = 'Logged in ' . floor($diff/3600) . ' hours ago';
-                                                    else $label = 'Last seen ' . floor($diff/86400) . ' days ago';
+
+                                                if ($status !== 'active') {
+                                                    // session is logged out
+                                                    if ($logoutTime) {
+                                                        $diff = time() - strtotime($logoutTime);
+                                                        if ($diff < 300) $label = 'Logged out just now';
+                                                        elseif ($diff < 3600) $label = 'Logged out ' . floor($diff/60) . ' minutes ago';
+                                                        elseif ($diff < 86400) $label = 'Logged out ' . floor($diff/3600) . ' hours ago';
+                                                        else $label = 'Logged out ' . floor($diff/86400) . ' days ago';
+                                                    } else {
+                                                        // fallback to last seen timestamp when logout_time unavailable
+                                                        if ($lastSeen) {
+                                                            $diff = time() - strtotime($lastSeen);
+                                                            if ($diff < 300) $label = 'Recently active';
+                                                            elseif ($diff < 3600) $label = 'Active ' . floor($diff/60) . ' minutes ago';
+                                                            elseif ($diff < 86400) $label = 'Active ' . floor($diff/3600) . ' hours ago';
+                                                            else $label = 'Last seen ' . floor($diff/86400) . ' days ago';
+                                                        }
+                                                    }
+                                                } else {
+                                                    // active session: use last seen
+                                                    if ($lastSeen) {
+                                                        $diff = time() - strtotime($lastSeen);
+                                                        if ($diff < 300) $label = 'Active now';
+                                                        elseif ($diff < 3600) $label = 'Logged in ' . floor($diff/60) . ' minutes ago';
+                                                        elseif ($diff < 86400) $label = 'Logged in ' . floor($diff/3600) . ' hours ago';
+                                                        else $label = 'Last seen ' . floor($diff/86400) . ' days ago';
+                                                    }
                                                 }
+
                                                 $isCurrent = ($currentSid && $currentSid === ($s['session_id'] ?? ''));
                                             ?>
-                                                <li>
+                                                <?php
+                                                    // normalize timestamps to ISO 8601 for reliable client-side parsing
+                                                    $lastSeenIso = '';
+                                                    $logoutTimeIso = '';
+                                                    if (!empty($lastSeen)) {
+                                                        $ts = strtotime($lastSeen);
+                                                        if ($ts !== false) $lastSeenIso = date('c', $ts);
+                                                    }
+                                                    if (!empty($logoutTime)) {
+                                                        $ts2 = strtotime($logoutTime);
+                                                        if ($ts2 !== false) $logoutTimeIso = date('c', $ts2);
+                                                    }
+                                                    // Determine attributes: do not emit status attribute for the current active session
+                                                    $attrs = 'data-session-id="' . htmlspecialchars($s['session_id'] ?? '') . '"';
+                                                    if (!($isCurrent && $status === 'active')) {
+                                                        $attrs .= ' data-status="' . htmlspecialchars($status) . '"';
+                                                    }
+                                                    if ($lastSeenIso) $attrs .= ' data-last-seen="' . htmlspecialchars($lastSeenIso) . '"';
+                                                    if ($logoutTimeIso) $attrs .= ' data-logout-time="' . htmlspecialchars($logoutTimeIso) . '"';
+                                                    if ($isCurrent) $attrs .= ' data-current="1"';
+                                                ?>
+                                                <li <?php echo $attrs; ?>>
                                                     <strong><?php echo htmlspecialchars(get_short_agent($s['user_agent'] ?? '')); ?></strong>
-                                                    — <?php echo $label; ?>
-                                                    <div style="color:#666;font-size:13px;">IP: <?php echo htmlspecialchars($s['ip'] ?? 'Unknown'); ?><?php if ($locationLabel) echo ' — ' . htmlspecialchars($locationLabel); ?></div>
+                                                    — <span class="session-label"><?php echo $label; ?></span>
+                                                    <div style="color: #666; font-size: 14px;">IP: <?php echo htmlspecialchars($s['ip'] ?? 'Unknown'); ?><?php if ($locationLabel) echo ' — ' . htmlspecialchars($locationLabel); ?></div>
                                                     <?php if ($isCurrent) echo '<div style="color:green;font-size:13px;">This device</div>'; ?>
                                                 </li>
                                             <?php endforeach; ?>
                                         </ul>
                                     <?php endif; ?>
-                                    <div style="margin-top:10px;"><button id="settings-logout-all" class="btn">Logout from all devices</button></div>
+                                    <div style="margin-top: 10px;"><button id="settings-logout-all" class="btn danger">Logout from all devices</button></div>
                                 </div>
                             </section>
 
@@ -638,7 +757,7 @@ function get_short_agent($ua)
                             <section id="panel-logout" class="settings-panel-content" style="display:none;">
                                 <h3>Logout</h3>
                                 <p>Sign out of this device.</p>
-                                <div style="margin-top:12px;"><button id="panel-logout-btn" class="btn">Logout</button></div>
+                                <div style="margin-top: 10px;"><button id="panel-logout-btn" class="btn">Logout</button></div>
                             </section>
                         </div>
                     </div>
@@ -648,16 +767,16 @@ function get_short_agent($ua)
             </div>
             <div class="mannequin-content" style="display:none;">
                 <?php if (empty($user['email_verified'])): ?>
-                    <div class="mannequin-locked" style="padding:40px;text-align:center;">
-                        <h2>Verify your email first</h2>
+                    <div class="mannequin-locked" style="padding: 40px; text-align:center;">
+                 h2     <h2>Verify your emailh2irst</h2>
                         <p>Verify your email first before accessing this feature.</p>
-                        <p><a href="/artine3/auth/resend_verification.php" class="btn">Resend verification</a></p>
+                 buttonioa href="/artine3/auth/verify.php" target="_blaVerifyorar">buttonbutton class="btn">Resend verification</button></a>
                     </div>
                 <?php else: ?>
                 <div class="mannequin-controls">
-                    <div class="tab tabs">
-                        <button class="body-measurement tab active" id="bodyTabBtn">Body Measurements</button>
-                        <button class="other-pref tab" id="otherPrefBtn">Skin, Face, Body Shape</button>
+                    <div class="mannequin-tabs">
+                        <a href="#" class="tab body-measurement active" id="bodyTabBtn">Body Measurements</a>
+                        <a href="#" class="tab other-pref" id="otherPrefBtn">Skin, Face, Body Shape</a>
                     </div>
                     <div id="bodyTab" style="display:none;">
                         <form class="measurements">
@@ -717,8 +836,7 @@ function get_short_agent($ua)
                                 </div>
                             </div>
                             <div class="btn-row">
-                                <button id="save-measurements" class="btn primary">Save</button>
-                                <button id="edit-measurements" class="btn">Edit</button>
+                                <button id="save-measurements" class="btn primary save-mannequin">Save</button>
                             </div>
                         </form>
                     </div>
@@ -726,14 +844,14 @@ function get_short_agent($ua)
                         <div class="other-pref-group">
                             <div class="other-pref-section">
                                 <div class="other-pref-label">Skin Tone</div>
-                                <button type="button" class="skin-btn" data-skin="#FFDFC4" aria-label="Light skin tone"><span class="swatch" style="background:#FFDFC4"></span></button>
+                                <button type="button" class="skin-btn" data-skin="#FFDFC4" aria-label="Light skin tone" aria-pressed="true"><span class="swatch" style="background:#FFDFC4"></span></button>
                                 <button type="button" class="skin-btn" data-skin="#e0b899" aria-label="Medium skin tone"><span class="swatch" style="background:#e0b899"></span></button>
                                 <button type="button" class="skin-btn" data-skin="#c68642" aria-label="Tan skin tone"><span class="swatch" style="background:#c68642"></span></button>
                                 <button type="button" class="skin-btn" data-skin="#a97c50" aria-label="Dark skin tone"><span class="swatch" style="background:#a97c50"></span></button>
                             </div>
                             <div class="other-pref-section">
                                 <div class="other-pref-label">Face Shape</div>
-                                <button type="button" class="face-btn" data-morph="Oval Face Shape">Oval</button>
+                                <button type="button" class="face-btn active" data-morph="Oval Face Shape">Oval</button>
                                 <button type="button" class="face-btn" data-morph="Square Face Shape">Square</button>
                                 <button type="button" class="face-btn" data-morph="Diamond Face Shape">Diamond</button>
                                 <button type="button" class="face-btn" data-morph="Rectangular Face Shape">Rectangular</button>
@@ -742,7 +860,7 @@ function get_short_agent($ua)
                             <div class="other-pref-section">
                                 <div class="other-pref-label">Body Shape</div>
                                 <button type="button" class="bodyshape-btn" data-morph="Triangle Body">Triangle</button>
-                                <button type="button" class="bodyshape-btn" data-morph="Straight Body">Straight</button>
+                                <button type="button" class="bodyshape-btn active" data-morph="Straight Body">Straight</button>
                                 <button type="button" class="bodyshape-btn" data-morph="Curvy Body">Curvy</button>
                                 <button type="button" class="bodyshape-btn" data-morph="Body (to Fat)">To Fat</button>
                                 <button type="button" class="bodyshape-btn" data-morph="Thin">Thin</button>
@@ -754,6 +872,9 @@ function get_short_agent($ua)
                                 <button type="button" class="pose-btn" data-morph="'A' Pose">A Pose</button>
                                 <button type="button" class="pose-btn" data-morph="'Hi' Pose">Hi Pose</button>
                                 <button type="button" class="pose-btn" data-morph="'Peace' Pose">Peace Pose</button>
+                                </div>
+                            <div class="btn-row">
+                                <button id="save-preferences" class="btn primary save-mannequin">Save</button>
                             </div>
                         </div>
                     </div>
@@ -841,36 +962,12 @@ function get_short_agent($ua)
 
                 <div class="modal-btn">
                     <button type="button" id="modal_back" class="btn">Back to list</button>
-                    <button type="submit" id="modal-save" class="btn btn--primary">Save</button>
+                    <button type="submit" id="modal-save" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
     </div>
-    <!-- Change password modal -->
-    <div id="change-password-modal" class="modal-overlay" style="display:none;">
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="change-password-title">
-            <button id="change-password-close" class="modal-close" aria-label="Close"><i class="fa fa-times"></i></button>
-            <h3 id="change-password-title">Change password</h3>
-            <form id="change-password-form" method="post" action="auth/change_password.php" class="auth-form">
-                <div class="form-group">
-                    <label for="old_password">Current password</label>
-                    <input class="input-form" type="password" id="old_password" name="old_password" required>
-                </div>
-                <div class="form-group">
-                    <label for="new_password">New password</label>
-                    <input class="input-form" type="password" id="new_password" name="new_password" required>
-                </div>
-                <div class="form-group">
-                    <label for="new_password_confirm">Confirm new password</label>
-                    <input class="input-form" type="password" id="new_password_confirm" name="new_password_confirm" required>
-                </div>
-                <div class="modal-btn" style="justify-content:flex-end;">
-                    <button type="button" id="change-password-cancel" class="btn">Cancel</button>
-                    <button type="submit" class="btn primary">Update password</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Change password now uses a dedicated page at auth/password.php?action=change -->
     <!-- Payment info modal (used for GCash / Credit Card extra info) - styled like the address modal -->
     <div id="payment-modal" class="modal-overlay" aria-hidden="true">
         <div class="modal pm-modal-panel" role="dialog" aria-modal="true">
@@ -899,45 +996,7 @@ function get_short_agent($ua)
     </script>
     <script>
         (function(){
-            // Open change-password modal when user clicks inline Edit
-            var editBtn = document.getElementById('settings-edit-password');
-            var modal = document.getElementById('change-password-modal');
-            var modalClose = document.getElementById('change-password-close');
-            var modalCancel = document.getElementById('change-password-cancel');
-            if (editBtn && modal) {
-                editBtn.addEventListener('click', function(e){
-                    e.preventDefault();
-                    modal.style.display = '';
-                });
-            }
-            if (modalClose) modalClose.addEventListener('click', function(){ modal.style.display = 'none'; });
-            if (modalCancel) modalCancel.addEventListener('click', function(){ modal.style.display = 'none'; });
-
-            // 2FA toggle: post to backend if endpoint exists, otherwise show a toast
-            var tf = document.getElementById('settings-2fa-toggle');
-            if (tf) {
-                tf.addEventListener('change', async function(){
-                    var enabled = tf.checked ? 1 : 0;
-                    try {
-                        const res = await fetch('auth/2fa_toggle.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ enable: enabled })
-                        });
-                        if (!res.ok) throw new Error('Request failed');
-                        const j = await res.json();
-                        if (j && j.success) {
-                            try { if (typeof showNotification === 'function') showNotification('2FA updated', 'success'); else alert('2FA updated'); } catch(e){}
-                        } else {
-                            throw new Error((j && j.message) ? j.message : 'Failed');
-                        }
-                    } catch (err) {
-                        // revert toggle
-                        tf.checked = !tf.checked;
-                        try { if (typeof showNotification === 'function') showNotification('Failed to update 2FA', 'error'); else alert('Failed to update 2FA'); } catch(e){}
-                    }
-                });
-            }
+            // 2FA toggle handled by assets/js/account.js (frontend module)
 
             // show messages from query params (password change results)
             function qp(name) { var m = new RegExp('[?&]'+name+'=([^&#]*)').exec(window.location.search); return m ? decodeURIComponent(m[1]) : null; }

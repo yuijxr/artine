@@ -5,16 +5,6 @@
     border-bottom: 2px solid #000;
 }
 
-.mannequin-controls .tab button {
-    width: 100%;
-    outline: none;
-    border: 1px solid #000;
-    padding: 10px 20px;
-    font-size: 16px;
-    color: #333;
-    cursor: pointer;
-}
-
 .measurements {
     display: flex;
     flex-direction: column;
@@ -78,29 +68,6 @@
     display: flex;
     gap: 10px;
     justify-content: flex-end;
-}
-
-.btn {
-    padding: 10px 30px;
-    border-radius: 5px;
-    border: 1px solid #0095FF;
-    font-size: 16px;
-    font-weight: 500;
-    background: #fff;
-    color: #0095FF;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-}
-
-.btn.primary {
-    background: #0095FF;
-    color: #fff;
-    border: 1px solid #0095FF;
-}
-
-.btn.primary:hover, .btn:hover {
-    background: #0095FF;
-    color: #fff;
 }
 
 .profile-content {
@@ -190,71 +157,29 @@
     align-items: start;
 }
 
-.section-content {
-    margin-bottom: 15px; 
-}
-
-.section-content1 h2, .settings-panel-content h3 {
+.section-content, .section-content1 h2, .settings-panel-content h3 {
     margin-bottom: 10px;
 }
 
 .section-content1 p {
-    margin-top: 10px; 
+    margin-top: 10px;
     color: #666;
     font-size: 14px
 }
 
-.add-button {
-    background: none;
-    border: none;
-    color: #7fc1ff;
-    font-size: 14px;
-    cursor: pointer;
-    text-decoration: underline;
+.other-pref-group, .payments-list, .addresses-list { 
+    font-size: 16px;
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px;
 }
-
-.address-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.address-container h3 {
-    margin: 0;
-    font-size: 24px;
-}
-
-/* Settings panel header: h3 and manage link spaced between */
-.settings-panel-header {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:12px;
-}
-.settings-panel-header h3 { margin:0; }
-.manage-link { color:#0099ff; text-decoration:underline; font-size:14px; }
-.manage-link:hover { text-decoration:none; }
-
-.payments-list, .addresses-list { display:flex; flex-direction:column; gap:10px; }
-.payment-item { padding:8px 10px; border-radius:6px; background:#fff; border:1px solid #eef4fb; }
 
 .privacy-text p { margin-bottom:10px; }
-
-.sessions-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
-.sessions-list li { color:#333; }
 
 /* Payment method card (checkout-like) */
 .pm-card { border:1px solid #e6f3ff; padding:12px; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
 .pm-card.active { border-color:#1976d2; box-shadow:0 2px 8px rgba(25,118,210,0.06); }
 .pm-left .pm-name { font-weight:600; }
-
-/* small responsive tweaks */
-@media (max-width:800px) {
-    .settings-layout { flex-direction:column; }
-    .settings-nav { width:100%; order:2; }
-    .settings-content { order:1; }
-}
 
 .add-address-btn {
     background-color: transparent;
@@ -265,64 +190,8 @@
     text-decoration: underline;
 }
 
-.address-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 15px;
-}
-
-.address-form .form-group:last-child {
-    grid-column: span 2;
-}
-
 .payment-methods {
     margin-top: 20px;
-}
-
-/* Measurements Grid Styles */
-.measurements-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-}
-
-.measurement-item {
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    background-color: #fff;
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.measurement-label {
-    font-size: 16px;
-    color: #777;
-    margin-bottom: 5px;
-}
-
-.measurement-value {
-    font-size: 16px;
-    font-weight: 500;
-}
-
-.recommended-size {
-    color: #7fc1ff;
-    font-weight: 700;
-}
-
-/* Responsive adjustments for measurements */
-@media (max-width: 768px) {
-    .measurements-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 480px) {
-    .measurements-grid {
-        grid-template-columns: 1fr;
-    }
 }
 
 /* Orders Page Styles */
@@ -346,13 +215,7 @@
     border-bottom: 1px solid #e2e8f0;
 }
 
-.order-date {
-    color: #666;
-    font-size: 14px;
-    margin: 0;
-}
-
-.order-arrival {
+.order-date, .order-arrival {
     color: #666;
     font-size: 14px;
     margin: 0;
@@ -413,13 +276,6 @@
 
 
 /* Mannequin preference buttons (skin tone swatches, face/body/pose buttons) */
-.other-pref-group { 
-    font-size: 16px;
-    display: flex; 
-    flex-direction: column; 
-    gap: 10px; 
-}
-
 .other-pref-label { 
     width: 120px; 
     font-weight: 500; 
@@ -469,22 +325,21 @@
 }
 
 .other-pref-section .face-btn, .other-pref-section .bodyshape-btn, .other-pref-section .pose-btn { 
-    margin-right:5px; 
+    margin-right: 5px; 
 }
-
-
-@media (max-width:760px) {
-    .addresses-grid { grid-template-columns: 1fr; }
-}
-
-/* modal styles moved to components.css to keep modal visuals consistent across the app */
 
 /* input with action (e.g. inline edit link inside input) */
-.input-with-action { position: relative; display: flex; align-items: center; }
+.input-with-action { 
+    position: relative; 
+    display: flex; 
+    align-items: center; 
+}
+
 .input-with-action input[type="password"], .input-with-action input[type="text"] {
     width: 100%;
     padding-right: 90px; /* make room for action */
 }
+
 .input-with-action .inline-action {
     position: absolute;
     right: 10px;
@@ -493,10 +348,15 @@
     color: #0095FF;
     font-weight: 600;
     cursor: pointer;
-    padding: 6px 10px;
+    padding: 5px 10px;
     text-decoration: none;
+    border-radius: 5px;
 }
-.input-with-action .inline-action:hover { text-decoration: underline; }
+
+.input-with-action .inline-action:hover { 
+    text-decoration: underline;
+    background: rgba(25,118,210,0.06); 
+}
 
 /* toggle switch (for 2FA) */
 .toggle-switch {
@@ -506,6 +366,7 @@
     align-items: center;
     gap: 8px;
 }
+
 .toggle-switch input[type="checkbox"] {
     appearance: none;
     -webkit-appearance: none;
@@ -518,6 +379,7 @@
     cursor: pointer;
     transition: background 0.15s ease;
 }
+
 .toggle-switch input[type="checkbox"]::after {
     content: '';
     position: absolute;
@@ -537,73 +399,84 @@
     left: calc(var(--switch-w) - 24px);
 }
 
-/* AUTH / SETTINGS input normalization */
-.auth-form .form-group, .settings-panel-content .form-group {
-    margin-bottom: 12px;
-}
-.auth-form .form-group label, .settings-panel-content label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #0f172a;
-}
-
-/* make inline action look like a subtle button */
-.input-with-action .inline-action {
-    border-radius: 6px;
-    padding: 6px 10px;
-    background: transparent;
-    border: 1px solid transparent;
-}
-.input-with-action .inline-action:hover { background: rgba(25,118,210,0.06); }
-
 /* Settings panel header */
 .settings-panel-header {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom:10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
 }
-.settings-panel-header h3 { margin:0; font-size:20px; }
-.manage-link { color:#1976d2; text-decoration:none; font-weight:600; }
-.manage-link:hover { text-decoration:underline; }
+
+.manage-link { 
+    font-size: 14px;
+    color: #0099ff; 
+    text-decoration: underline; 
+}
 
 /* Security panel — activity and sessions */
 .security-activity {
     background: #fff;
     border: 1px solid #e6eef9;
-    padding: 12px;
-    border-radius: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
 }
-.security-activity .activity-line { color:#334155; font-size:14px; margin-bottom:6px; }
 
-.active-sessions { margin-top:12px; }
-.sessions-list { list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px; }
+.security-activity.card {
+    margin-top: 20px; 
+    max-width: 720px;
+}
+
+.security-activity .activity-line { 
+    color: #334155; 
+    font-size: 14px; 
+    margin-bottom: 5px; 
+}
+
+.sessions-list { 
+    display: flex;
+    flex-direction: column;
+    gap: 5px; 
+}
+
 .sessions-list li {
-    display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;border:1px solid #eef4fb;background:#fff;
-}
-.sessions-list li strong { display:block;font-size:14px;margin-bottom:4px;color:#0f172a; }
-.session-meta { color:#64748b;font-size:13px; }
-.sessions-list li .session-actions { display:flex;gap:8px;align-items:center; }
-.sessions-list li .session-actions button { padding:6px 8px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:13px; }
-.sessions-list li .session-actions button.danger { border-color:#f8d7da;color:#c62828; }
-
-@media (max-width:760px) {
-    .sessions-list li { flex-direction:column;align-items:flex-start; }
-    .sessions-list li .session-actions { align-self:flex-end; }
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid #eef4fb;
+    background: #fff;
 }
 
+.sessions-list li strong { 
+    display: block;
+    font-size: 14px;
+    color: #0f172a; 
+}
 
-@media (max-width: 760px) {
-    .profile-section .section-content { grid-template-columns: 1fr; }
-    .addresses-grid { grid-template-columns: 1fr; }
+.session-meta { 
+    color: #64748b;
+    font-size: 14px; 
+}
+
+.sessions-list li .session-actions { 
+    display: flex;
+    gap: 10px;
+    align-items: center; 
 }
 
 /* Settings left-nav and content styles */
 .settings-layout { 
     align-items: flex-start; 
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    align-items: flex-start;
+}
+
+.settings-nav {
+    width: 250px;
 }
 
 .settings-nav-item {
@@ -620,6 +493,11 @@
     cursor: pointer;
     color: #000;
 }
+
+.settings-nav-item i {
+    width: 22px;
+}
+
 .settings-nav-item:hover { 
     background: #f6f9ff; 
 }
@@ -628,11 +506,6 @@
     background: #e6f3ff; 
     font-weight: 600; 
     border-left: 3px solid #0095FF; 
-}
-
-@media (max-width: 900px) {
-    .settings-layout { flex-direction: column; }
-    .settings-nav { width: 100%; }
 }
 
 .orders-controls {
@@ -744,21 +617,6 @@
     margin-bottom: 30px;
 }
 
-.shop-now-btn {
-    display: inline-block;
-    padding: 15px 25px;
-    background: #0095FF;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: 500;
-    transition: background 0.2s ease;
-}
-
-.shop-now-btn:hover { 
-    background: #0077cc; 
-}
-
 .order-content {
     display: flex;
     flex-direction: column;
@@ -859,14 +717,6 @@
     margin-left: 20px;
 }
 
-.order-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 15px;
-    gap: 10px;
-}
-
-.order-action-btn,
 .cancel-order-btn,
 .return-product-btn {
     padding: 10px 15px;
@@ -874,10 +724,6 @@
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s;
-}
-
-.cancel-order-btn,
-.return-product-btn {
     background-color: transparent;
     border: 1px solid #ff4d4d;
     color: #ff4d4d;
@@ -889,93 +735,11 @@
     color: white;
 }
 
-.order-action-btn.primary {
-    background-color: #ff6b6b;
-    color: white;
-    border: none;
-}
-
-.order-action-btn.primary:hover {
-    background-color: #ff5252;
-}
-
-.order-action-btn.secondary {
-    background-color: transparent;
-    color: #333;
-    border: 1px solid #ddd;
-}
-
-.order-action-btn.secondary:hover {
-    background-color: #f5f5f5;
-}
-
 /* Mannequin Page Styles */
-.mannequin-container {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    padding: 30px;
-    width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 30px;
-}
-
 .mannequin-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 30px;
-}
-
-.measurements-form {
-    flex: 1;
-    min-width: 300px;
-}
-
-.measurement-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.measurement-row label {
-    width: 120px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.measurement-input {
-    display: flex;
-    align-items: center;
-}
-
-.measurement-input input {
-    width: 60px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    text-align: center;
-    font-size: 14px;
-}
-
-.measurement-input .unit {
-    margin-left: 10px;
-    color: #666;
-    font-size: 14px;
-}
-
-.mannequin-visual {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-.mannequin-visual img {
-    max-width: 100%;
-    height: auto;
-    max-height: 400px;
 }
 
 .mannequin-controls {
@@ -985,71 +749,39 @@
     width: 100%;
 }
 
-.mannequin-controls .tab {
+.mannequin-controls .mannequin-tabs {
     display: flex;
-    align-items: center;
     justify-content: center;
+    width: 100%;
+    border-bottom: 1px solid #ddd;
 }
 
-.btn {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.measurement-slider {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    align-items: center;
-    gap: 10px;
-}
-
-.slider-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.measurement-slider .value-display {
-    border: 0 0 1px 0 solid #000000;
-    width: 20%;
-    font-size: 14px;
+/* Button styling for mannequin control tabs (consolidated) */
+.mannequin-controls .tab {
+    padding: 10px 0;
+    margin: 0;
+    width: 50%;
+    font-size: 16px;
+    color: #333;
+    text-decoration: none;
     text-align: center;
-    padding: 10px;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
 }
 
-.measurement-slider .slider {
-    width: 80%;
+.mannequin-controls .tab.active {
+    color: #000;
+    font-weight: 600;
+    border-bottom-color: #7fc1ff;
+    background-color: #e6f3ff;
+}
+
+.mannequin-tabs .tab:hover {
+    color: #000;
 }
 
 .mannequin-viewer-container {
     height: 100%;
-}
-
-.edit-btn {
-    margin-left: 10px;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    border: 1px solid #ddd;
-    background-color: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.edit-btn:hover {
-    background-color: #e0e0e0;
-}
-
-.mannequin-note {
-    margin: 20px 0;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    font-size: 14px;
-    color: #666;
 }
 
 /* Settings Page Styles */
@@ -1068,142 +800,4 @@
 .settings-label {
     font-size: 14px;
     font-weight: 500;
-}
-
-/* Action Buttons */
-.action-btn {
-    display: block;
-    width: 100%;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    text-align: center;
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    color: #333;
-    transition: all 0.3s;
-}
-
-.action-btn:hover {
-    background-color: #e0e0e0;
-}
-
-.action-btn.danger {
-    background-color: transparent;
-    border: 1px solid #ff4d4d;
-    color: #ff4d4d;
-}
-
-.action-btn.danger:hover {
-    background-color: #ff4d4d;
-    color: white;
-}
-
-.action-btn.secondary {
-    background-color: transparent;
-    border: 1px solid #7fc1ff;
-    color: #0066cc;
-}
-
-.action-btn.secondary:hover {
-    background-color: #e6f3ff;
-}
-
-/* modal helpers moved to components.css */
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-    .profile-header {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .profile-avatar {
-        margin-right: 0;
-        margin-bottom: 15px;
-    }
-    
-    .profile-tabs {
-        overflow-x: auto;
-        white-space: nowrap;
-        padding-bottom: 5px;
-    }
-    
-    .profile-tabs .tab {
-        padding: 10px 15px;
-    }
-    
-    .address-form {
-        grid-template-columns: 1fr;
-    }
-    
-    .address-form .form-group:last-child {
-        grid-column: span 1;
-    }
-    
-    .order-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .order-date {
-        margin-top: 5px;
-    }
-    
-    .order-status {
-        margin-top: 10px;
-    }
-    
-    .order-product {
-        flex-direction: column;
-    }
-    
-    .order-product-image {
-        margin-right: 0;
-        margin-bottom: 15px;
-    }
-    
-    .order-actions {
-        flex-direction: column;
-    }
-    
-    .order-action-btn {
-        width: 100%;
-        text-align: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .profile-content {
-        margin-top: 100px;
-        margin-bottom: 180px; /* Ensure enough space between content and footer on mobile */
-        padding: 0 15px;
-    }
-    
-    .profile-avatar {
-        width: 80px;
-        height: 80px;
-    }
-    
-    .profile-info h1 {
-        font-size: 20px;
-    }
-    
-    .mannequin-container {
-        padding: 20px 15px;
-    }
-    
-    .settings-row {
-        padding: 12px 0;
-    }
-    
-    .settings-label {
-        font-size: 13px;
-    }
-    
-    .switch {
-        width: 44px;
-        height: 22px;
-    }
 }

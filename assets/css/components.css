@@ -1,5 +1,5 @@
 /* INPUT FORMS */
-.form-group {
+.form-group, .auth-form .form-group, .settings-panel-content, .active-sessions {
     margin-bottom: 15px;
 }
 
@@ -11,7 +11,7 @@
     width: 200px;
 }
 
-.form-group input:focus, .form-row input:focus {
+.form-group input:focus, .form-row input:focus, .auth-form select:focus, .input-with-action input:focus {
     outline: none;
     border-color: #0095FF;
     box-shadow: 0 0 0 2px rgba(0,149,255,0.2);
@@ -26,7 +26,6 @@
     font-size: 16px;
 }
 
-
 .form-row {
     margin-bottom: 15px;
     display: flex;
@@ -35,16 +34,63 @@
 }
 
 .form-row label {
-    width: 150px;
+    width: 120px;
     font-size: 14px;
 }
 
 /* BUTTONS */
+.btn {
+    padding: 10px 20px;
+    margin-bottom: 15px;
+    background: #fff;
+    color: #0095FF;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 500;
+    border: 1px solid #0095FF;
+    cursor: pointer;
+    transition: all 0.3s;
+}
 
+.btn.primary {
+    background: #0095FF;
+    color: #fff;
+    border: none;
+}
+
+.big-btn {
+    padding: 15px 25px;
+    font-size: 16px;
+}
+
+.btn.wide {
+    width: 100%;
+}
+
+.btn.danger {
+    background: #fff;
+    color: #ff4d4d;
+    border: 1px solid #ff4d4d;
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    background: #0095FF;
+    color: #fff;
+}
+
+
+.btn.primary:hover {
+    background: #0077cc;
+}
+
+.btn.danger:hover {
+    background: #ff4d4d;
+    color: #fff;
+}
 
 /* MODALS */
-
-/* Modal base styles (used by address/payment/change-password modals) */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -69,17 +115,6 @@
     box-shadow: 0 8px 30px rgba(0,0,0,0.12);
 }
 
-/* Variation used for payment panels or smaller modals */
-.modal.pm-modal-panel,
-.pm-modal-panel {
-    position: relative !important;
-    left: auto !important;
-    top: auto !important;
-    transform: none !important;
-    max-width: 520px;
-    width: 100%;
-}
-
 .modal .modal-close, .pm-modal-close {
     position: absolute;
     top: 12px;
@@ -91,7 +126,8 @@
     cursor: pointer;
 }
 
-.modal .modal-close:hover, .pm-modal-close:hover { 
+.modal .modal-close:hover, 
+.pm-modal-close:hover { 
     color: #000; 
 }
 
@@ -107,6 +143,12 @@
     text-align: center; 
 }
 
+.modal p {
+    font-size: 16   px; 
+    color: #333; 
+    text-align: center; 
+}
+
 .modal-btn, .pm-modal-actions { 
     margin-top: 15px; 
     display: flex; 
@@ -114,25 +156,147 @@
     gap: 10px; 
 }
 
-/* utility modal helpers (lists/headers used by various modal types) */
-.modal-content { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.modal-addresses-list, #modal_addresses_list { display: grid; gap: 10px; max-height: 420px; overflow: auto; }
-.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-
-/* Auto-primary button behavior
-   - If a single .btn exists, style it as primary.
-   - If multiple .btn siblings exist, style the last .btn as primary (unless it already has .primary).
-   This allows leaving markup unchanged while ensuring the positive action is visually primary.
-*/
-.btn:only-child:not(.primary),
-.btn:last-child:not(.primary) {
-    background: #0095FF;
-    color: #fff;
-    border-color: #0095FF;
+.modal-content, .modal-head, .address-container { 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
 }
-.btn:only-child:not(.primary):hover,
-.btn:last-child:not(.primary):hover {
-    background: #0077cc;
-    color: #fff;
+
+.modal-addresses-list, #modal_addresses_list { 
+    display: grid; 
+    gap: 10px; 
+    max-height: 420px; 
+    overflow: auto; 
+}
+
+/* ITEMS */
+.cart-container, .checkout-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+    margin-bottom: 60px;
+}
+
+.cart-items,
+.checkout-items {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cart-item,
+.checkout-item {
+    display: grid;
+    gap: 20px;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    transition: box-shadow 0.3s ease;
+}
+
+.cart-item {
+    grid-template-columns: 120px 1fr auto auto auto;
+
+}
+
+.checkout-item {
+    grid-template-columns: 120px 1fr auto;
+
+}
+
+.cart-item:hover,
+.checkout-item:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.cart-item-image,
+.checkout-item-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #C3E6FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-item-image img,
+.checkout-item-image img {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+}
+
+.cart-item-details,
+.checkout-item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.cart-item-name,
+.checkout-item-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+}
+
+.cart-item-category,
+.checkout-item-size,
+.cart-item-size,
+.checkout-item-qty {
+    font-size: 14px;
+    color: #64748b;
+}
+
+.cart-item-price,
+.checkout-item-price {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.cart-item-quantity,
+.checkout-item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.checkout-summary, .cart-summary {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 30px;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+
+.checkout-summary h3, .cart-summary-content h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 20px;
+}
+
+.checkout-summary-row, .summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.checkout-summary-row.total, .summary-row.total {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 15px;
+    margin-top: 20px;
 }
 

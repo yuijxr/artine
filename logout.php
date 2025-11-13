@@ -1,8 +1,19 @@
 <?php
 require_once 'includes/session.php';
+require_once 'includes/db_connect.php';
 
-// Destroy session
+// Mark the current session row as logged_out in the database (if present)
 if (session_status() === PHP_SESSION_ACTIVE) {
+	$sid = session_id();
+	if (!empty($sid) && isset($conn)) {
+		try {
+			$up = $conn->prepare('UPDATE sessions SET `status` = ?, logout_time = NOW() WHERE session_id = ?');
+			if ($up) { $st = 'logged_out'; $up->bind_param('ss', $st, $sid); $up->execute(); $up->close(); }
+		} catch (Exception $e) {
+			// ignore DB errors; continue to destroy session
+		}
+	}
+
 	// Unset all session variables
 	$_SESSION = [];
 	// Destroy session cookie if present

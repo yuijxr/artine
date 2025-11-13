@@ -24,8 +24,8 @@ if ($method === 'POST') {
     $stmt = $conn->prepare(
         'INSERT INTO addresses (user_id,full_name,phone,house_number,barangay,street,city,province,postal_code,country,is_default,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,0,NOW())'
     );
-    $full_name = $data['full_name'] ?? '';
-    $phone = $data['phone'] ?? '';
+    $full_name = trim($data['full_name'] ?? '');
+    $phone = trim($data['phone'] ?? '');
     $house_number = $data['house_number'] ?? '';
     $barangay = $data['barangay'] ?? '';
     $street = $data['street'] ?? '';
@@ -33,6 +33,12 @@ if ($method === 'POST') {
     $province = $data['province'] ?? '';
     $postal_code = $data['postal_code'] ?? '';
     $country = $data['country'] ?? '';
+    // Validate phone: if provided, must be 11 digits
+    if ($phone !== '' && !preg_match('/^\d{11}$/', $phone)) {
+        echo json_encode(['success' => false, 'message' => 'Phone number must be 11 digits']);
+        exit;
+    }
+
     $stmt->bind_param('isssssssss', $user_id, $full_name, $phone, $house_number, $barangay, $street, $city, $province, $postal_code, $country);
     if (!$stmt->execute()) {
         echo json_encode(['success' => false, 'message' => $conn->error]);
@@ -63,8 +69,8 @@ if ($method === 'PUT') {
         exit;
     }
     // otherwise perform a normal update (no is_default expected)
-    $full_name = $data['full_name'] ?? '';
-    $phone = $data['phone'] ?? '';
+    $full_name = trim($data['full_name'] ?? '');
+    $phone = trim($data['phone'] ?? '');
     $house_number = $data['house_number'] ?? '';
     $barangay = $data['barangay'] ?? '';
     $street = $data['street'] ?? '';
@@ -72,6 +78,12 @@ if ($method === 'PUT') {
     $province = $data['province'] ?? '';
     $postal_code = $data['postal_code'] ?? '';
     $country = $data['country'] ?? '';
+    // Validate phone: if provided, must be 11 digits
+    if ($phone !== '' && !preg_match('/^\d{11}$/', $phone)) {
+        echo json_encode(['success' => false, 'message' => 'Phone number must be 11 digits']);
+        exit;
+    }
+
     $stmt = $conn->prepare(
         'UPDATE addresses SET full_name=?,phone=?,house_number=?,barangay=?,street=?,city=?,province=?,postal_code=?,country=? WHERE address_id=? AND user_id=?'
     );

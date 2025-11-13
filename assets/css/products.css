@@ -240,38 +240,6 @@
     margin-top: 20px;
 }
 
-.add-to-cart-btn, .try-on-btn {
-    padding: 15px 25px;
-    border-radius: 5px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.add-to-cart-btn {
-    background: #0095FF;
-    color: #fff;
-    border: none;
-    flex: 2;
-}
-
-.add-to-cart-btn:hover {
-    background: #0077cc;
-}
-
-.try-on-btn {
-    background: #fff;
-    color: #0095FF;
-    border: 1px solid #0095FF;
-    flex: 1;
-}
-
-.try-on-btn:hover {
-    background: #0095FF;
-    color: #fff;
-}
-
 .product-accordion {
     margin-top: 40px;
 }

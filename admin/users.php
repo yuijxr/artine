@@ -7,7 +7,8 @@ require_admin();
 
 // fetch users (simple table, exclude soft-deleted)
 $users = [];
-$stmt = $conn->prepare('SELECT user_id, first_name, last_name, email, phone, email_verified, created_at FROM users WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 500');
+// include login attempt data to show locked status in admin UI (now consolidated in login_security)
+$stmt = $conn->prepare('SELECT u.user_id, u.first_name, u.last_name, u.email, u.phone, u.email_verified, u.created_at, ls.attempt_count AS la_attempts, ls.locked_until AS la_locked_until FROM users u LEFT JOIN login_security ls ON ls.identifier = u.email WHERE u.deleted_at IS NULL ORDER BY u.created_at DESC LIMIT 500');
 if ($stmt) {
     $stmt->execute();
     $res = $stmt->get_result();
@@ -42,6 +43,12 @@ if ($stmt) {
         </nav>
         <section style="flex:1;">
             <h3>Customers</h3>
+            <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;">
+                <form method="post" action="/artine3/admin/unlock_accounts.php" style="display:inline;">
+                    <input type="hidden" name="action" value="unlock_all">
+                    <button type="submit" style="background:#059669;border:none;color:#fff;padding:8px 10px;border-radius:6px;cursor:pointer;">Unlock All Accounts</button>
+                </form>
+            </div>
             <?php if (empty($users)): ?>
                 <div>No users found.</div>
             <?php else: ?>
@@ -56,15 +63,34 @@ if ($stmt) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($users as $u): ?>
-                            <tr>
-                                <td style="padding:8px;border-bottom:1px solid #fafafa"><?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?></td>
-                                <td style="padding:8px;border-bottom:1px solid #fafafa"><?php echo htmlspecialchars($u['email']); ?></td>
-                                <td style="padding:8px;border-bottom:1px solid #fafafa"><?php echo htmlspecialchars($u['phone']); ?></td>
-                                <td style="padding:8px;border-bottom:1px solid #fafafa"><?php echo $u['email_verified'] ? 'Yes' : 'No'; ?></td>
-                                <td style="padding:8px;border-bottom:1px solid #fafafa"><?php echo htmlspecialchars($u['created_at']); ?></td>
-                            </tr>
-                        <?php endforeach; ?>
+                                <?php foreach ($users as $u): ?>
+                                    <tr>
+                                        <td style="padding:8px;border-bottom:1px solid #fafafa"><?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?></td>
+                                        <td style="padding:8px;border-bottom:1px solid #fafafa"><?php echo htmlspecialchars($u['email']); ?></td>
+                                        <td style="padding:8px;border-bottom:1px solid #fafafa"><?php echo htmlspecialchars($u['phone']); ?></td>
+                                        <td style="padding:8px;border-bottom:1px solid #fafafa"><?php echo $u['email_verified'] ? 'Yes' : 'No'; ?></td>
+                                        <td style="padding:8px;border-bottom:1px solid #fafafa"><?php echo htmlspecialchars($u['created_at']); ?></td>
+                                        <td style="padding:8px;border-bottom:1px solid #fafafa;white-space:nowrap;">
+                                            <?php
+                                                $locked = !empty($u['la_locked_until']) && strtotime($u['la_locked_until']) > time();
+                                                if ($locked) {
+                                                    echo '<span style="color:#b91c1c;margin-right:8px;">Locked until ' . htmlspecialchars($u['la_locked_until']) . '</span>';
+                                                } elseif (!empty($u['la_attempts'])) {
+                                                    echo '<span style="color:#666;margin-right:8px;">Attempts: ' . intval($u['la_attempts']) . '</span>';
+                                                } else {
+                                                    echo '<span style="color:#666;margin-right:8px;">OK</span>';
+                                                }
+                                            ?>
+                                            <?php if ($locked): ?>
+                                                <form method="post" action="/artine3/admin/unlock_accounts.php" style="display:inline;margin-left:6px;">
+                                                    <input type="hidden" name="action" value="unlock_user">
+                                                    <input type="hidden" name="email" value="<?php echo htmlspecialchars($u['email']); ?>">
+                                                    <button type="submit" style="background:#059669;border:none;color:#fff;padding:6px 8px;border-radius:6px;cursor:pointer;">Unlock</button>
+                                                </form>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                     </tbody>
                 </table>
             <?php endif; ?>

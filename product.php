@@ -159,8 +159,8 @@ $sizes = ['S', 'M', 'L', 'XL'];
                         </div>
                     </div>
                     <div class="product-actions">
-                        <button class="add-to-cart-btn" id="add-to-cart">Add to cart</button>
-                        <button class="try-on-btn" id="try-mannequin">Try on Wardrobe</button>
+                        <button class="big-btn btn primary wide" style="flex: 2;" id="add-to-cart">Add to cart</button>
+                        <button class="big-btn btn" style="flex: 1;" id="try-mannequin">Try on Wardrobe</button>
                     </div>
                 </div>
 
