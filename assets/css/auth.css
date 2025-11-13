@@ -16,38 +16,6 @@
     margin: 0 auto;
 }
 
-.auth-forms {
-    position: relative;
-    height: auto; /* since only one form per page */
-}
-
-.auth-form {
-    position: relative;
-    width: 100%;
-    opacity: 1;
-    transform: none;
-    visibility: visible;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    font-size: 14px;
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 10px 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
 .forgot-password {
     margin-top: -10px;
     text-align: right;
@@ -60,7 +28,6 @@
     font-size: 14px;
 }
 
-.form-group input:focus,
 .auth-form select:focus {
     outline: none;
     border-color: #0095FF;
@@ -112,7 +79,7 @@
 .auth-form select {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid #e2e8f0;
     border-radius: 5px;
     font-size: 16px;
     background-color: #fff;

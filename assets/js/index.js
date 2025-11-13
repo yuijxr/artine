@@ -42,6 +42,10 @@ function refreshCartState(){
 
 // Show styled notifications
 function showNotification(message, type = 'info') {
+    // prevent overlapping toasts: if one is visible, ignore new ones
+    if (window._notificationVisible) return;
+    window._notificationVisible = true;
+
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.style.cssText = `
@@ -62,8 +66,19 @@ function showNotification(message, type = 'info') {
     setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100);
     setTimeout(() => {
         notification.style.transform = 'translateX(100%)';
-        setTimeout(() => { notification.remove(); }, 300);
+        setTimeout(() => { notification.remove(); window._notificationVisible = false; }, 300);
     }, 3000);
+}
+
+// Show forgot-password flow: navigate to password reset request page (or open in new tab)
+function showForgotPassword() {
+    try {
+        // If user is on a SPA/modal-capable page we could open a modal; for now navigate to the request page
+        window.location.href = '/artine3/auth/forgot_password.php';
+    } catch (e) {
+        console.error('Failed to open password reset page', e);
+    }
+    return false;
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{

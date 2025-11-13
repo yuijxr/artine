@@ -24,6 +24,21 @@ function require_login()
 }
 
 /**
+ * Require that the current session is an admin account.
+ * If not logged in, redirect to login. If logged in but not admin, show 403.
+ */
+function require_admin()
+{
+    // Admin area uses a separate admin session. Do not rely on users.is_admin.
+    // Require an admin session (set by admin login logic as $_SESSION['admin_id']).
+    if (empty($_SESSION['admin_id'])) {
+        // Redirect to admin login
+        header('Location: /artine3/admin/login.php');
+        exit;
+    }
+}
+
+/**
  * Fetch current user row from users table using mysqli connection
  *
  * @param mysqli $conn

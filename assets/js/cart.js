@@ -57,7 +57,7 @@ function renderCartItems(items){
     items.forEach((it, idx)=>{
         const row = document.createElement('div');
         row.className = 'cart-item';
-        const imagePath = (window.AppUtils && window.AppUtils.resolveImagePath) ? window.AppUtils.resolveImagePath(it.image_url || it.image || 'no-image.png', it.category_name) : (it.image_url || it.image || 'assets/img/no-image.png');
+        const imagePath = (window.AppUtils && window.AppUtils.resolveImagePath) ? window.AppUtils.resolveImagePath(it.image_url || it.image || 'no-image.png', it.category_name) : (it.image_url || it.image || 'uploads/product_img/no-image.png');
         const lineTotal = (Number(it.price||0) * Number(it.quantity||0)).toFixed(2);
 
         row.innerHTML = `
@@ -198,8 +198,8 @@ document.addEventListener('DOMContentLoaded', async ()=>{
                 if (image && !image.includes('assets/')){
                     // use the shared resolver to avoid repeating folder logic
                     try{
-                        it.image = (window.AppUtils && window.AppUtils.resolveImagePath) ? window.AppUtils.resolveImagePath(image, it.category_name) : ('assets/img/' + (it.category_name && it.category_name.toLowerCase().includes('cap') ? 'caps/' : (it.category_name && it.category_name.toLowerCase().includes('perfume') ? 'perfumes/' : 'shirts/')) + image);
-                    }catch(e){ it.image = 'assets/img/shirts/' + image; }
+                                it.image = (window.AppUtils && window.AppUtils.resolveImagePath) ? window.AppUtils.resolveImagePath(image, it.category_name) : ('uploads/product_img/' + (it.category_name && it.category_name.toLowerCase().includes('cap') ? 'caps/' : (it.category_name && it.category_name.toLowerCase().includes('perfume') ? 'perfumes/' : 'shirts/')) + image);
+                    }catch(e){ it.image = 'uploads/product_img/shirts/' + image; }
                 }
                 normalized.push(it);
             }

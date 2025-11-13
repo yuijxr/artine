@@ -14,6 +14,8 @@ $user = current_user($conn);
     <link rel="stylesheet" href="assets/css/cart.css">
     <link rel="stylesheet" href="assets/css/checkout.css">
     <link rel="stylesheet" href="assets/css/profile.css">
+    <link rel="stylesheet" href="assets/css/auth.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dekko&family=Devonshire&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -64,16 +66,15 @@ $user = current_user($conn);
         </div>
     </main>
 
-    <!-- Payment info modal (used for GCash / Credit Card extra info) -->
-    <div id="payment-modal" class="pm-modal" aria-hidden="true">
-        <div class="pm-modal-backdrop"></div>
-        <div class="pm-modal-panel" role="dialog" aria-modal="true">
-            <button class="pm-modal-close" aria-label="Close">×</button>
+    <!-- Payment info modal (used for GCash / Credit Card extra info) - styled like the address modal -->
+    <div id="payment-modal" class="modal-overlay" aria-hidden="true">
+        <div class="modal pm-modal-panel" role="dialog" aria-modal="true">
+            <button class="pm-modal-close modal-close" aria-label="Close"><i class="fa fa-times"></i></button>
             <h3 id="pm-modal-title">Payment Info</h3>
             <div id="pm-modal-body"></div>
-            <div class="pm-modal-actions">
+            <div class="modal-btn pm-modal-actions">
                 <button id="pm-modal-cancel" class="btn">Cancel</button>
-                <button id="pm-modal-confirm" class="btn btn-primary">Confirm</button>
+                <button id="pm-modal-confirm" class="btn primary">Confirm</button>
             </div>
         </div>
     </div>
@@ -87,7 +88,7 @@ $user = current_user($conn);
     ];
     // Addresses
     $stmt = $conn->prepare(
-        'SELECT address_id,user_id,full_name,phone,street,city,province,postal_code,country,is_default FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC'
+        'SELECT address_id,user_id,full_name,phone,house_number,barangay,street,city,province,postal_code,country,is_default FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC'
     );
     $uid = intval($_SESSION['user_id']);
     $stmt->bind_param('i', $uid);
@@ -116,15 +117,10 @@ $user = current_user($conn);
     if ($stmt->execute()) {
         $res = $stmt->get_result();
         while ($r = $res->fetch_assoc()) {
-            $category = strtolower($r['category_name']);
-            $folder = '';
-            if (strpos($category, 'shirt') !== false) {
-                $folder = 'shirts/';
-            } elseif (strpos($category, 'cap') !== false) {
-                $folder = 'caps/';
-            } elseif (strpos($category, 'perfume') !== false) {
-                $folder = 'perfumes/';
-            }
+            // map the DB image value to the uploads path
+            require_once __DIR__ . '/includes/helpers.php';
+            $img = $r['image_url'] ?: '';
+            $resolved = resolve_image_path($img, $r['category_name']);
             $init['items'][] = [
                 'cart_id' => $r['cart_id'],
                 'product_id' => $r['product_id'],
@@ -133,8 +129,8 @@ $user = current_user($conn);
                 'quantity' => $r['quantity'],
                 'size' => $r['size'],
                 // include both keys the JS might expect
-                'image' => 'assets/img/' . $folder . ($r['image_url'] ?: 'no-image.png'),
-                'image_url' => 'assets/img/' . $folder . ($r['image_url'] ?: 'no-image.png')
+                'image' => $resolved,
+                'image_url' => $resolved
             ];
         }
     }
@@ -156,52 +152,76 @@ $user = current_user($conn);
             </button>
             <h3 id="addr-modal-title">Manage Addresses</h3>
             <div id="modal_list">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <div class="modal-head">
                     <strong>Your saved addresses</strong>
+                    <a href="#" id="modal_add_new" class="add-address-btn">Add address</a>
                 </div>
-                <div id="modal_addresses_list" style="display:grid;gap:8px;max-height:420px;overflow:auto;"></div>
-                <p class="modal-instruction" style="margin-top:10px;color:#666;font-size:13px;text-align:center">
+                <div id="modal_addresses_list"></div>
+                <p class="modal-instruction">
                     Click an address to select it as default, then click Save changes
                 </p>
-                <div style="margin-top:12px;display:flex;justify-content:center;gap:8px;">
+                <div class="modal-btn">
                     <button id="modal_save_changes" class="btn primary">Save changes</button>
                     <button id="modal_cancel_changes" class="btn">Cancel</button>
                 </div>
-                <div style="margin-top:12px;display:flex;justify-content:center;">
-                    <button id="modal_add_new" class="btn">+ Add address</button>
-                </div>
+                <!-- Add address link moved to header for compact layout -->
             </div>
             <form id="addr-modal-form" style="display:none;">
-                <input type="hidden" id="modal_address_id">
-                <div class="form-row">
-                    <label style="width:120px">Full name</label>
-                    <input id="modal_full_name" required>
+                <input class="input-form" type="hidden" id="modal_address_id">
+                <?php
+                $pref_full_name = htmlspecialchars(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+                $pref_phone = htmlspecialchars($user['phone'] ?? '');
+                $pref_country = htmlspecialchars($user['country'] ?? 'Philippines');
+                ?>
+                <div class="name-row">
+                    <div class="form-group">
+                        <label>Full name</label>
+                        <input class="input-form" id="modal_full_name" type="text" required value="<?php echo $pref_full_name; ?>" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input class="input-form" id="modal_phone" type="tel" required value="<?php echo $pref_phone; ?>" readonly>
+                    </div>
                 </div>
-                <div class="form-row">
-                    <label style="width:120px">Phone</label>
-                    <input id="modal_phone" required>
+
+                <div class="info-row">
+                    <div class="form-group">
+                        <label>House number</label>
+                        <input class="input-form" id="modal_house_number" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Street</label>
+                        <input class="input-form" id="modal_street" type="text" required>
+                    </div>
                 </div>
-                <div class="form-row">
-                    <label style="width:120px">Street</label>
-                    <input id="modal_street" required>
+
+                <div class="info-row">
+                    <div class="form-group">
+                        <label>Barangay</label>
+                        <input class="input-form" id="modal_barangay" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>City / Municipality</label>
+                        <input class="input-form" id="modal_city" type="text" required>
+                    </div>
                 </div>
-                <div class="form-row">
-                    <label style="width:120px">City</label>
-                    <input id="modal_city" required>
+
+                <div class="info-row">
+                    <div class="form-group">
+                        <label>Province</label>
+                        <input class="input-form" id="modal_province" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Postal code</label>
+                        <input class="input-form" id="modal_postal_code" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Country</label>
+                        <input class="input-form" id="modal_country" type="text" value="<?php echo $pref_country; ?>" readonly required>
+                    </div>
                 </div>
-                <div class="form-row">
-                    <label style="width:120px">Province</label>
-                    <input id="modal_province" required>
-                </div>
-                <div class="form-row">
-                    <label style="width:120px">Postal code</label>
-                    <input id="modal_postal_code">
-                </div>
-                <div class="form-row">
-                    <label style="width:120px">Country</label>
-                    <input id="modal_country" value="Philippines">
-                </div>
-                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
+
+                <div class="modal-btn">
                     <button type="button" id="modal_back" class="btn">Back to list</button>
                     <button type="submit" id="modal-save" class="btn primary">Save</button>
                 </div>

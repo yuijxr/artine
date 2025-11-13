@@ -16,6 +16,7 @@ if ($is_logged) {
     $stmt->bind_param('i', $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
+    require_once __DIR__ . '/includes/helpers.php';
     while ($row = $result->fetch_assoc()) {
         // Determine the correct image folder based on category
         $image_folder = '';
@@ -27,8 +28,8 @@ if ($is_logged) {
         } elseif (strpos($category, 'perfume') !== false) {
             $image_folder = 'perfumes/';
         }
-        
-        $image_path = 'assets/img/' . $image_folder . $row['image_url'];
+        // Use resolve_image_path to map DB value to the new uploads/product_img structure
+        $image_path = resolve_image_path($row['image_url'] ?? '', $row['category_name'] ?? '');
         
         $cart_items[] = [
             'id' => $row['product_id'],
@@ -51,20 +52,11 @@ if ($is_logged) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/cart.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dekko&family=Devonshire&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
     <title>FitCheck</title>
-    <style>
-        /* cart title style to match the provided screenshot */
-        .cart-title{
-            font-family: 'Dekko', 'Devonshire', 'Outfit', sans-serif;
-            font-size: 64px;
-            text-align: center;
-            margin: 30px 0 40px;
-            letter-spacing: 2px;
-        }
-    </style>
 </head>
 <body>
     <?php include 'includes/header.php'; ?>

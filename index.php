@@ -34,6 +34,7 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/products.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dekko&family=Devonshire&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -48,22 +49,24 @@ $result = $conn->query($sql);
             <?php if ($result->num_rows > 0): ?>
                 <?php 
                 $count = 0;
-                while ($row = $result->fetch_assoc()): 
+                    require_once __DIR__ . '/includes/helpers.php';
+                    while ($row = $result->fetch_assoc()): 
                     $count++
                 ?>
                     <a href="product.php?id=<?php echo $row['product_id']; ?>" class="product-card" data-product-id="<?php echo $row['product_id']; ?>" data-category="<?php echo htmlspecialchars(strtolower($row['category_name'])); ?>">
                         <div class="product-image">
-                            <img src="assets/img/<?php 
-                                $category = strtolower($row['category_name']);
-                                if (strpos($category, 'shirt') !== false) {
-                                    echo 'shirts/';
-                                } elseif (strpos($category, 'cap') !== false) {
-                                    echo 'caps/';
-                                } elseif (strpos($category, 'perfume') !== false) {
-                                    echo 'perfumes/';
-                                }
-                                echo htmlspecialchars($row['image_url'] ?: 'no-image.png'); 
-                            ?>" alt="<?php echo htmlspecialchars($row['product_name']); ?>">
+                                <?php
+                                    // Resolve image path via helper to prefer uploads/product_img/... and map legacy paths
+                                    $imgPath = resolve_image_path($row['image_url'] ?? '', $row['category_name'] ?? '');
+                                    // If local path contains spaces, encode each segment
+                                    $renderSrc = $imgPath;
+                                    if (!preg_match('#^https?://#i', $imgPath)) {
+                                        $parts = explode('/', $imgPath);
+                                        $parts = array_map('rawurlencode', $parts);
+                                        $renderSrc = implode('/', $parts);
+                                    }
+                                ?>
+                                <img src="<?php echo htmlspecialchars($renderSrc); ?>" alt="<?php echo htmlspecialchars($row['product_name']); ?>">
                         </div>
                         <div class="product-info">
                             <h3 class="product-name"><?php echo htmlspecialchars($row['product_name']); ?></h3>

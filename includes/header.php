@@ -78,4 +78,5 @@ if (is_logged_in()) {
 		// initial values available synchronously to JS to avoid flash of 0
 		window.INIT_CART_COUNT = <?= intval($initialCartCount) ?>;
 		window.IS_LOGGED = <?= is_logged_in() ? 'true' : 'false' ?>;
+		window.IS_VERIFIED = <?= (is_logged_in() && (!empty($user['email_verified']))) ? 'true' : 'false' ?>;
 	</script>

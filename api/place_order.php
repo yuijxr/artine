@@ -6,6 +6,20 @@ if (!is_logged_in()) {
     echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit;
 }
+// ensure email is verified
+$uid = intval($_SESSION['user_id']);
+$vstmt = $conn->prepare('SELECT email_verified FROM users WHERE user_id = ? LIMIT 1');
+if ($vstmt) {
+    $vstmt->bind_param('i', $uid);
+    $vstmt->execute();
+    $vres = $vstmt->get_result();
+    $urow = $vres->fetch_assoc();
+    $vstmt->close();
+    if (empty($urow) || empty($urow['email_verified'])) {
+        echo json_encode(['success' => false, 'message' => 'Please verify your email before checking out.']);
+        exit;
+    }
+}
 $data = json_decode(file_get_contents('php://input'), true) ?: [];
 $user_id = intval($_SESSION['user_id']);
 $address_id = intval($data['address_id'] ?? 0);

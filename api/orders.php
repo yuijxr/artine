@@ -34,21 +34,13 @@ if ($method === 'GET') {
             if (!$thumb && !empty($r['image_url'])) {
                 $thumb = $r['image_url'];
             }
-            // Build thumbnail_path similar to index.php
-            $cat = strtolower($r['category_name'] ?? '');
-            $folder = '';
-            if (strpos($cat, 'shirt') !== false) {
-                $folder = 'shirts/';
-            } elseif (strpos($cat, 'cap') !== false) {
-                $folder = 'caps/';
-            } elseif (strpos($cat, 'perfume') !== false) {
-                $folder = 'perfumes/';
-            }
+            // Build thumbnail_path using resolve_thumbnail_path helper if available
+            require_once __DIR__ . '/../includes/helpers.php';
             $r['thumbnail'] = $thumb;
             if ($thumb) {
-                $r['thumbnail_path'] = 'assets/img/' . $folder . $thumb;
+                $r['thumbnail_path'] = resolve_thumbnail_path($thumb, $r['category_name'] ?? '');
             } else {
-                $r['thumbnail_path'] = 'assets/img/thumbnails/noimg.png';
+                $r['thumbnail_path'] = resolve_thumbnail_path(null, $r['category_name'] ?? '');
             }
             $items[] = $r;
         }
@@ -79,17 +71,20 @@ if ($method === 'GET') {
         } elseif (strpos($cat, 'perfume') !== false) {
             $folder = 'perfumes/';
         }
+        require_once __DIR__ . '/../includes/helpers.php';
         if ($thumb) {
-            $ord['thumbnail_path'] = 'assets/img/' . $folder . $thumb;
+            // prefer main image resolution
+            $ord['thumbnail_path'] = resolve_image_path($thumb, $ord['category_name'] ?? '');
         } else {
-            $ord['thumbnail_path'] = 'assets/img/thumbnails/noimg.png';
+            $ord['thumbnail_path'] = resolve_thumbnail_path(null, $ord['category_name'] ?? '');
         }
     }
     // compute simple per-user counts so the client can show accurate counts immediately
     $counts = [
         'all' => 0,
         'pending' => 0,
-        'completed' => 0,
+        // use 'delivered' as canonical status key
+        'delivered' => 0,
         'cancelled' => 0,
         'returned' => 0
     ];
@@ -99,8 +94,9 @@ if ($method === 'GET') {
         if ($s === 'pending') {
             $counts['pending'] += 1;
         }
-        if ($s === 'delivered' || $s === 'completed') {
-            $counts['completed'] += 1;
+        // treat legacy 'complete' as delivered; count 'delivered' as canonical
+        if ($s === 'delivered' || $s === 'complete') {
+            $counts['delivered'] += 1;
         }
         if ($s === 'cancelled') {
             $counts['cancelled'] += 1;

@@ -22,16 +22,18 @@ $data = json_decode(file_get_contents('php://input'), true) ?: [];
 if ($method === 'POST') {
     // create (defaults to non-default; default is set via separate action)
     $stmt = $conn->prepare(
-        'INSERT INTO addresses (user_id,full_name,phone,street,city,province,postal_code,country,is_default,created_at) VALUES (?,?,?,?,?,?,?,?,0,NOW())'
+        'INSERT INTO addresses (user_id,full_name,phone,house_number,barangay,street,city,province,postal_code,country,is_default,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,0,NOW())'
     );
     $full_name = $data['full_name'] ?? '';
     $phone = $data['phone'] ?? '';
+    $house_number = $data['house_number'] ?? '';
+    $barangay = $data['barangay'] ?? '';
     $street = $data['street'] ?? '';
     $city = $data['city'] ?? '';
     $province = $data['province'] ?? '';
     $postal_code = $data['postal_code'] ?? '';
     $country = $data['country'] ?? '';
-    $stmt->bind_param('isssssss', $user_id, $full_name, $phone, $street, $city, $province, $postal_code, $country);
+    $stmt->bind_param('isssssssss', $user_id, $full_name, $phone, $house_number, $barangay, $street, $city, $province, $postal_code, $country);
     if (!$stmt->execute()) {
         echo json_encode(['success' => false, 'message' => $conn->error]);
         exit;
@@ -63,15 +65,17 @@ if ($method === 'PUT') {
     // otherwise perform a normal update (no is_default expected)
     $full_name = $data['full_name'] ?? '';
     $phone = $data['phone'] ?? '';
+    $house_number = $data['house_number'] ?? '';
+    $barangay = $data['barangay'] ?? '';
     $street = $data['street'] ?? '';
     $city = $data['city'] ?? '';
     $province = $data['province'] ?? '';
     $postal_code = $data['postal_code'] ?? '';
     $country = $data['country'] ?? '';
     $stmt = $conn->prepare(
-        'UPDATE addresses SET full_name=?,phone=?,street=?,city=?,province=?,postal_code=?,country=? WHERE address_id=? AND user_id=?'
+        'UPDATE addresses SET full_name=?,phone=?,house_number=?,barangay=?,street=?,city=?,province=?,postal_code=?,country=? WHERE address_id=? AND user_id=?'
     );
-    $stmt->bind_param('ssssssssi', $full_name, $phone, $street, $city, $province, $postal_code, $country, $id, $user_id);
+    $stmt->bind_param('ssssssssssi', $full_name, $phone, $house_number, $barangay, $street, $city, $province, $postal_code, $country, $id, $user_id);
     $stmt->execute();
     echo json_encode(['success' => true]);
     exit;

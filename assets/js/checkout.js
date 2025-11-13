@@ -28,17 +28,19 @@ async function loadCheckout(){
             card.setAttribute('data-address-id', chosen.address_id);
             card.innerHTML = `
                 <div class="address-name">${chosen.full_name} <span class="address-phone">(${chosen.phone})</span></div>
-                <div class="address-details">${chosen.street}, ${chosen.city}, ${chosen.province}</div>
-                <div class="address-details">${chosen.postal_code}, ${chosen.country}</div>
+                <div class="address-details">${chosen.house_number ? chosen.house_number + ', ' : ''}${chosen.street}</div>
+                <div class="address-details">${chosen.city}${chosen.barangay ? ', Barangay ' + chosen.barangay : ''}</div>
+                <div class="address-details">${chosen.province}, ${chosen.postal_code}, ${chosen.country}</div>
                 <div class="address-ship"><i class="fa-solid fa-location-dot"></i> Shipping to this address</div>
             `;
             card.title = 'Click to manage or change address';
             card.addEventListener('click', ()=>{
                 // Open the account address manager modal if available, otherwise fallback to the addresses page
-                if (typeof window.openAddressManager === 'function') {
+                    if (typeof window.openAddressManager === 'function') {
                     window.openAddressManager();
                 } else {
-                    window.location.href = 'account_addresses.php?from=checkout';
+                    // legacy fallback: open the account page and instruct it to open the address manager
+                    window.location.href = 'account.php?from=checkout';
                 }
             });
             list.appendChild(card);
@@ -50,7 +52,8 @@ async function loadCheckout(){
                 if (typeof window.openAddressManager === 'function') {
                     window.openAddressManager();
                 } else {
-                    window.location.href = 'account_addresses.php?from=checkout';
+                    // legacy fallback: open the account page and instruct it to open the address manager
+                    window.location.href = 'account.php?from=checkout';
                 }
             });
             list.appendChild(card);
@@ -107,7 +110,7 @@ async function loadCheckout(){
             const div = document.createElement('div');
             div.className = 'checkout-item';
             div.innerHTML = `
-                <div class="checkout-item-image"><img src="${it.image_url || 'assets/img/thumbnails/noimg.png'}" alt="${it.name}"></div>
+                <div class="checkout-item-image"><img src="${it.image_url || it.thumbnail_path || 'uploads/thumbnail_img/noimg.png'}" alt="${it.name}"></div>
                 <div class="checkout-item-details">
                     <div class="checkout-item-name">${it.name}</div>
                     <div class="checkout-item-size">Size: ${it.size || '-'}</div>
@@ -152,10 +155,23 @@ function showPaymentModal(method, onConfirm){
     const name = (method.name||'').toLowerCase();
     let html = '';
     if (/gcash/i.test(name)){
-        html = `<label>GCash Mobile Number<br><input id="pm-field" type="tel" placeholder="09xxxxxxxxx" style="width:100%;padding:8px;margin-top:6px;border:1px solid #e6eefb;border-radius:6px"></label>`;
+        html = `
+            <div class="form-group">
+                <label for="pm-field">GCash Number</label>
+                <input class="input-form" id="pm-field" type="tel" placeholder="09xxxxxxxxx" required />
+            </div>
+        `;
     } else if (/credit|card/i.test(name)){
-        html = `<label>Card Holder Name<br><input id="pm-field" type="text" placeholder="Name on card" style="width:100%;padding:8px;margin-top:6px;border:1px solid #e6eefb;border-radius:6px"></label>
-                <label style="display:block;margin-top:8px">Last 4 Digits (optional)<br><input id="pm-field-last4" type="text" maxlength="4" placeholder="1234" style="width:120px;padding:8px;margin-top:6px;border:1px solid #e6eefb;border-radius:6px"></label>`;
+        html = `
+            <div class="form-group">
+                <label for="pm-field">Card Holder Name</label>
+                <input class="input-form" id="pm-field" type="text" placeholder="Name on card" required />
+            </div>
+            <div class="form-group">
+                <label for="pm-field-last4">Last 4 Digits</label>
+                <input class="input-form" id="pm-field-last4" type="text" maxlength="4" placeholder="1234" />
+            </div>
+        `;
     } else {
         html = `<div>No extra information required for ${method.name}.</div>`;
     }
@@ -184,7 +200,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     const placeBtn = document.getElementById('place-order');
     if (placeBtn) {
-        placeBtn.addEventListener('click', async ()=>{
+        // If user is logged in but email not verified, intercept clicks and show a toast
+        if (typeof window.IS_VERIFIED !== 'undefined' && !window.IS_VERIFIED) {
+            placeBtn.addEventListener('click', (e)=>{
+                e.preventDefault();
+                if (typeof showNotification === 'function') showNotification('Verify your email first', 'error'); else alert('Verify your email first');
+            });
+        } else {
+            placeBtn.addEventListener('click', async ()=>{
             try {
                 const addrNode = document.querySelector('#addresses-list [data-address-id]');
                 if (!addrNode) { if (typeof showNotification === 'function') showNotification('Please add a delivery address first.', 'error'); else alert('Please add a delivery address first.'); return; }
@@ -197,6 +220,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 if (j.success){ if (typeof showNotification === 'function') showNotification('Order placed!', 'success'); setTimeout(()=>{ window.location.href = 'account.php#orders'; },1200); }
                 else { if (typeof showNotification === 'function') showNotification(j.message || 'Order failed', 'error'); else alert(j.message || 'Order failed'); }
             } catch (err) { if (typeof showNotification === 'function') showNotification('Failed to place order: ' + err.message, 'error'); else alert('Failed to place order: ' + err.message); }
-        });
+            });
+        }
     }
 });

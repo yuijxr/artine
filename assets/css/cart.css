@@ -20,7 +20,7 @@
     align-items: center;
     padding: 20px;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     background: #fff;
     transition: box-shadow 0.3s ease;
 }
@@ -32,9 +32,9 @@
 .cart-item-image {
     width: 120px;
     height: 120px;
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
-    background: #f8fafc;
+    background: #C3E6FF;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -110,7 +110,7 @@
     width: 60px;
     height: 32px;
     border: 1px solid #e2e8f0;
-    border-radius: 4px;
+    border-radius: 5px;
     text-align: center;
     font-size: 16px;
     font-weight: 500;
@@ -144,7 +144,7 @@
     border: 1px solid #fee2e2;
     background: #fff;
     color: #dc2626;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -178,7 +178,7 @@
 }
 
 .cart-summary-content h3 {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 600;
     color: #0f172a;
     margin-bottom: 20px;
@@ -272,60 +272,4 @@
 
 .shop-now-btn:hover {
     background: #0077cc;
-}
-
-/* ===== RESPONSIVE DESIGN ===== */
-@media (max-width: 1024px) {
-    .cart-container {
-        grid-template-columns: 1fr;
-        gap: 30px;
-    }
-    
-    .cart-summary {
-        position: static;
-    }
-}
-
-@media (max-width: 768px) {
-    .cart-item {
-        grid-template-columns: 1fr;
-        gap: 15px;
-        text-align: center;
-    }
-    
-    .cart-item-image {
-        width: 100%;
-        height: 200px;
-        margin: 0 auto;
-    }
-    
-    .cart-item-quantity {
-        justify-content: center;
-    }
-    
-    .cart-item-total {
-        text-align: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .cart-container {
-        gap: 20px;
-    }
-    
-    .cart-summary {
-        padding: 20px;
-    }
-    
-    .empty-cart {
-        padding: 40px 20px;
-    }
-    
-    .empty-cart-content i {
-        font-size: 48px;
-    }
-    
-    .empty-cart-content h2 {
-        font-size: 20px;
-    }
 }

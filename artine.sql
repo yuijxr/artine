@@ -281,7 +281,7 @@ CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
   `first_name` varchar(100) NOT NULL,
   `last_name` varchar(100) NOT NULL,
-  `gender` enum('male','female','other') NOT NULL,
+  `gender` enum('male','female') NOT NULL,
   `email` varchar(150) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `phone` varchar(20) DEFAULT NULL,

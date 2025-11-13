@@ -31,6 +31,7 @@ $sizes = ['S', 'M', 'L', 'XL'];
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/products.css">
     <link rel="stylesheet" href="assets/css/cart.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dekko&family=Devonshire&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -43,18 +44,9 @@ $sizes = ['S', 'M', 'L', 'XL'];
             <div class="product-gallery">
                 <div class="product-thumbnails">
                     <?php
-                        // build main image path using same category logic as before
-                        $imgPath = '';
-                        $category = strtolower($product['category_name'] ?? '');
-                        if (strpos($category, 'shirt') !== false) {
-                            $imgPath = 'assets/img/shirts/' . ($product['image_url'] ?: 'no-image.png');
-                        } elseif (strpos($category, 'cap') !== false) {
-                            $imgPath = 'assets/img/caps/' . ($product['image_url'] ?: 'no-image.png');
-                        } elseif (strpos($category, 'perfume') !== false) {
-                            $imgPath = 'assets/img/perfumes/' . ($product['image_url'] ?: 'no-image.png');
-                        } else {
-                            $imgPath = 'assets/img/' . ($product['image_url'] ?: 'no-image.png');
-                        }
+                        // Resolve image path using helper (it prefers admin uploads under uploads/product_img/)
+                        require_once __DIR__ . '/includes/helpers.php';
+                        $imgPath = resolve_image_path($product['image_url'] ?? '', $product['category_name'] ?? '');
 
                         // Read thumbnails from DB (thumbnail_images JSON) only.
                         // If DB doesn't have valid entries, fall back to using the product main image.
@@ -64,27 +56,19 @@ $sizes = ['S', 'M', 'L', 'XL'];
                             if (is_array($decoded) && count($decoded) > 0) {
                                 foreach ($decoded as $t) {
                                     $t = trim((string)$t);
-                                    if ($t === '') {
+                                    if ($t === '') continue;
+                                    // remote URL
+                                    if (preg_match('#^https?://#i', $t)) { $thumbs[] = $t; continue; }
+                                    // if already an uploads path or category/filename, prefer uploads/thumbnail_img
+                                    $resolvedThumb = null;
+                                    // try helper
+                                    if (function_exists('resolve_thumbnail_path')) {
+                                        $resolvedThumb = resolve_thumbnail_path($t, $product['category_name'] ?? '');
+                                    }
+                                    if ($resolvedThumb && $resolvedThumb !== '') {
+                                        $thumbs[] = $resolvedThumb;
                                         continue;
                                     }
-                                    // Accept remote URLs as-is
-                                    if (preg_match('#^https?://#i', $t)) {
-                                        $thumbs[] = $t;
-                                        continue;
-                                    }
-                                    // Accept absolute paths (starting with '/') only if the file exists
-                                    if (preg_match('#^/#', $t) && file_exists(__DIR__ . '/' . ltrim($t, '/'))) {
-                                        $thumbs[] = $t;
-                                        continue;
-                                    }
-                                    // Only accept bare filenames if they exist in assets/img/thumbnails/
-                                    $thumbCandidate = 'assets/img/thumbnails/' . $t;
-                                    if (file_exists(__DIR__ . '/' . $thumbCandidate)) {
-                                        $thumbs[] = $thumbCandidate;
-                                        continue;
-                                    }
-                                    // Otherwise ignore the DB entry (do not try other folders)
-                                    // If the DB value doesn't point to a reachable file or URL, ignore it.
                                 }
                             }
                         }
@@ -223,5 +207,13 @@ $sizes = ['S', 'M', 'L', 'XL'];
     <script>const PRODUCT = <?php echo json_encode($product); ?>;</script>
     <script src="assets/js/index.js"></script>
     <script src="assets/js/product.js"></script>
+    <!-- Module shims & import map for three.js used by mannequin viewer -->
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap"> {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.min.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+        }
+    } </script>
 </body>
 </html>

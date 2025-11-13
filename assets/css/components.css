@@ -1,0 +1,138 @@
+/* INPUT FORMS */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    width: 200px;
+}
+
+.form-group input:focus, .form-row input:focus {
+    outline: none;
+    border-color: #0095FF;
+    box-shadow: 0 0 0 2px rgba(0,149,255,0.2);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-form {
+    width: 100%;
+    padding: 10px 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+
+.form-row {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-row label {
+    width: 150px;
+    font-size: 14px;
+}
+
+/* BUTTONS */
+
+
+/* MODALS */
+
+/* Modal base styles (used by address/payment/change-password modals) */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1200;
+    padding: 20px;
+}
+
+.modal-overlay[aria-hidden="true"] { display: none; }
+.modal-overlay[aria-hidden="false"] { display: flex; }
+
+.modal {
+    position: relative;
+    background: #fff;
+    max-width: 680px;
+    width: 100%;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+/* Variation used for payment panels or smaller modals */
+.modal.pm-modal-panel,
+.pm-modal-panel {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    max-width: 520px;
+    width: 100%;
+}
+
+.modal .modal-close, .pm-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+}
+
+.modal .modal-close:hover, .pm-modal-close:hover { 
+    color: #000; 
+}
+
+.modal-instruction { 
+    margin-top: 10px; 
+    color: #666; 
+    font-size: 14px; 
+}
+
+.modal h3 { 
+    font-size: 24px; 
+    margin: 0 0 20px; 
+    text-align: center; 
+}
+
+.modal-btn, .pm-modal-actions { 
+    margin-top: 15px; 
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 10px; 
+}
+
+/* utility modal helpers (lists/headers used by various modal types) */
+.modal-content { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.modal-addresses-list, #modal_addresses_list { display: grid; gap: 10px; max-height: 420px; overflow: auto; }
+.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+/* Auto-primary button behavior
+   - If a single .btn exists, style it as primary.
+   - If multiple .btn siblings exist, style the last .btn as primary (unless it already has .primary).
+   This allows leaving markup unchanged while ensuring the positive action is visually primary.
+*/
+.btn:only-child:not(.primary),
+.btn:last-child:not(.primary) {
+    background: #0095FF;
+    color: #fff;
+    border-color: #0095FF;
+}
+.btn:only-child:not(.primary):hover,
+.btn:last-child:not(.primary):hover {
+    background: #0077cc;
+    color: #fff;
+}
+
